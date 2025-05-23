@@ -1,0 +1,28 @@
+# Global ownership - thomasvincent owns everything by default
+* @thomasvincent
+
+# Dependency management - Dependabot PRs require review
+.github/dependabot.yml @thomasvincent
+package.json @thomasvincent
+package-lock.json @thomasvincent
+requirements.txt @thomasvincent
+pyproject.toml @thomasvincent
+Cargo.toml @thomasvincent
+Cargo.lock @thomasvincent
+go.mod @thomasvincent
+go.sum @thomasvincent
+Gemfile @thomasvincent
+Gemfile.lock @thomasvincent
+pom.xml @thomasvincent
+build.gradle @thomasvincent
+
+# CI/CD configurations
+.github/workflows/ @thomasvincent
+.github/actions/ @thomasvincent
+Dockerfile @thomasvincent
+docker-compose.yml @thomasvincent
+
+# Documentation
+README.md @thomasvincent
+CHANGELOG.md @thomasvincent
+docs/ @thomasvincent
