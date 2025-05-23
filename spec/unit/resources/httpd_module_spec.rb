@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe 'test::httpd_module' do
@@ -10,7 +12,7 @@ describe 'test::httpd_module' do
       'a2dismod_cmd' => '/usr/sbin/a2dismod'
     },
     'centos' => {
-      'versions' => ['8', '9'],
+      'versions' => %w[8 9],
       'mod_dir' => '/etc/httpd/conf.modules.d',
       'libexec_dir' => '/usr/lib64/httpd/modules'
     }
@@ -125,23 +127,23 @@ cookbook_file "#{cookbook_path}/metadata.rb" do
 end
 
 cookbook_file "#{cookbook_path}/recipes/httpd_module.rb" do
-  content <<-EOH
-    httpd_module 'ssl' do
-      action :enable
-    end
+  content <<~EOH
+        httpd_module 'ssl' do
+          action :enable
+        end
 
-    httpd_module 'rewrite' do
-      action :disable
-    end
+        httpd_module 'rewrite' do
+          action :disable
+        end
 
-    httpd_module 'status' do
-      configuration <<-EOC
-<Location "/server-status">
-  SetHandler server-status
-  Require local
-</Location>
-      EOC
-      action :enable
-    end
+        httpd_module 'status' do
+          configuration <<-EOC
+    <Location "/server-status">
+      SetHandler server-status
+      Require local
+    </Location>
+          EOC
+          action :enable
+        end
   EOH
 end

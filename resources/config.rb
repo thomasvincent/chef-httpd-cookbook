@@ -97,20 +97,20 @@ action_class do
 
   def create_symlink_to_enabled
     # Only create symlink for Debian-based platforms or if create_symlink is true
-    if node['platform_family'] == 'debian' || new_resource.create_symlink
-      link symlink_path do
-        to config_file_path
-        action :create
-      end
+    return unless platform_family?('debian') || new_resource.create_symlink
+
+    link symlink_path do
+      to config_file_path
+      action :create
     end
   end
 
   def delete_symlink
-    if node['platform_family'] == 'debian' || new_resource.create_symlink
-      link symlink_path do
-        action :delete
-        only_if { ::File.exist?(symlink_path) }
-      end
+    return unless platform_family?('debian') || new_resource.create_symlink
+
+    link symlink_path do
+      action :delete
+      only_if { ::File.exist?(symlink_path) }
     end
   end
 end

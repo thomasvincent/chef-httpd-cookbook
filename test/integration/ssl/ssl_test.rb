@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # InSpec test for httpd cookbook SSL suite
 
 # Include all the basic tests first
@@ -10,52 +12,52 @@ describe port(443) do
 end
 
 # Check that the SSL module is enabled
-describe file('/etc/httpd/conf.modules.d/ssl.load'), :if => os.redhat? do
+describe file('/etc/httpd/conf.modules.d/ssl.load'), if: os.redhat? do
   it { should exist }
 end
 
-describe file('/etc/apache2/mods-enabled/ssl.load'), :if => os.debian? do
+describe file('/etc/apache2/mods-enabled/ssl.load'), if: os.debian? do
   it { should exist }
 end
 
 # Check for SSL configuration
-describe file('/etc/httpd/conf.d/ssl.conf'), :if => os.redhat? do
+describe file('/etc/httpd/conf.d/ssl.conf'), if: os.redhat? do
   it { should exist }
-  its('content') { should match /SSLEngine on/ }
+  its('content') { should match(/SSLEngine on/) }
 end
 
-describe file('/etc/apache2/sites-enabled/001-default-ssl.conf'), :if => os.debian? do
+describe file('/etc/apache2/sites-enabled/001-default-ssl.conf'), if: os.debian? do
   it { should exist }
-  its('content') { should match /SSLEngine on/ }
+  its('content') { should match(/SSLEngine on/) }
 end
 
 # Check for HTTPS redirect
 describe http('http://localhost/') do
   its('status') { should be_in [301, 302] }
-  its('headers.Location') { should match /^https:\/\// }
+  its('headers.Location') { should match %r{^https://} }
 end
 
 # Check HTTPS response (using curl since InSpec http resource doesn't support SSL verification skipping)
-describe command('curl -k -s -o /dev/null -w "%{http_code}" https://localhost/') do
+describe command('curl -k -s -o /dev/null -w "%<http_code>s" https://localhost/') do
   its('stdout') { should eq '200' }
 end
 
-# Check SSL certificate 
-describe file('/etc/pki/tls/certs/localhost.crt'), :if => os.redhat? do
+# Check SSL certificate
+describe file('/etc/pki/tls/certs/localhost.crt'), if: os.redhat? do
   it { should exist }
 end
 
-describe file('/etc/ssl/certs/localhost.crt'), :if => os.debian? do
+describe file('/etc/ssl/certs/localhost.crt'), if: os.debian? do
   it { should exist }
 end
 
 # Check SSL key
-describe file('/etc/pki/tls/private/localhost.key'), :if => os.redhat? do
+describe file('/etc/pki/tls/private/localhost.key'), if: os.redhat? do
   it { should exist }
   it { should_not be_readable.by('others') }
 end
 
-describe file('/etc/ssl/private/localhost.key'), :if => os.debian? do
+describe file('/etc/ssl/private/localhost.key'), if: os.debian? do
   it { should exist }
   it { should_not be_readable.by('others') }
 end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe 'test::httpd_install' do
@@ -8,12 +10,12 @@ describe 'test::httpd_install' do
       'service_name' => 'apache2'
     },
     'centos' => {
-      'versions' => ['8', '9'],
+      'versions' => %w[8 9],
       'package_name' => 'httpd',
       'service_name' => 'httpd'
     }
   }
-  
+
   before do
     stub_command('getenforce | grep -i disabled').and_return(false)
     stub_command('sestatus | grep -q "SELinux status: enabled"').and_return(true)
@@ -71,9 +73,7 @@ describe 'test::httpd_install' do
           end
 
           it 'configures selinux ports and policies on RHEL platforms' do
-            if platform == 'centos'
-              expect(chef_run).to run_execute('selinux-port-80')
-            end
+            expect(chef_run).to run_execute('selinux-port-80') if platform == 'centos'
           end
         end
       end

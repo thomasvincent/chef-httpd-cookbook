@@ -25,19 +25,19 @@ module Httpd
       reload_status = false
       max_attempts.times do |attempt|
         Chef::Log.info("Attempting graceful reload of #{service_name} (attempt #{attempt + 1}/#{max_attempts})")
-        
+
         if systemd?
           reload_command = "systemctl reload #{service_name}"
         else
           apache_ctl = platform_family?('debian') ? 'apache2ctl' : 'apachectl'
           reload_command = "#{apache_ctl} graceful"
         end
-        
+
         cmd = shell_out(reload_command)
         reload_status = cmd.exitstatus.zero?
-        
+
         break if reload_status
-        
+
         Chef::Log.warn("Reload attempt #{attempt + 1} failed, waiting #{wait_time}s before retry")
         sleep(wait_time)
       end
@@ -53,10 +53,8 @@ module Httpd
       # Check if workers were replaced
       new_pids = httpd_worker_pids
       pids_changed = (original_pids - new_pids).any? || (new_pids - original_pids).any?
-      
-      unless pids_changed
-        Chef::Log.warn("No worker processes were replaced during reload of #{service_name}")
-      end
+
+      Chef::Log.warn("No worker processes were replaced during reload of #{service_name}") unless pids_changed
 
       # Run post-reload check if provided
       if post_check && !post_check.call
@@ -73,7 +71,7 @@ module Httpd
     def httpd_worker_pids
       process_pattern = platform_family?('debian') ? 'apache2' : 'httpd'
       cmd = shell_out("pgrep -f #{process_pattern}")
-      
+
       if cmd.exitstatus.zero?
         cmd.stdout.split("\n").map(&:to_i)
       else
@@ -97,10 +95,10 @@ module Httpd
           socket.print("HEAD #{path} HTTP/1.1\r\nHost: #{host}\r\nConnection: close\r\n\r\n")
           response = socket.read
           socket.close
-          return response.include?('HTTP/1.1 200') || response.include?('HTTP/1.1 301') || 
+          return response.include?('HTTP/1.1 200') || response.include?('HTTP/1.1 301') ||
                  response.include?('HTTP/1.1 302') || response.include?('HTTP/1.1 304')
         end
-      rescue => e
+      rescue StandardError => e
         Chef::Log.warn("Health check failed: #{e.message}")
         false
       end
@@ -113,64 +111,64 @@ module Httpd
     # @param rollback_on_failure [Boolean] Whether to roll back if reload fails
     # @param block [Block] The block containing the configuration change
     # @return [Boolean] True if successful, false otherwise
-    def staged_rollout(service_name = nil, config_path: nil, backup_path: nil, rollback_on_failure: true, &block)
+    def staged_rollout(service_name = nil, config_path: nil, backup_path: nil, rollback_on_failure: true)
       service_name ||= httpd_service_name
-      
+
       # Back up current configuration if path provided
       if config_path && backup_path
         directory ::File.dirname(backup_path) do
           recursive true
           action :create
         end
-        
+
         execute "Backing up #{config_path}" do
           command "cp -f #{config_path} #{backup_path}"
           only_if { ::File.exist?(config_path) }
         end
       end
-      
+
       # Define health check for before/after reload
       health_check = -> { apache_health_check }
-      
+
       # Execute the configuration change block
       begin
         yield if block_given?
-      rescue => e
+      rescue StandardError => e
         Chef::Log.error("Failed to apply configuration changes: #{e.message}")
         return false
       end
-      
+
       # Validate configuration syntax
       validate_cmd = platform_family?('debian') ? 'apache2ctl -t' : 'httpd -t'
       cmd = shell_out(validate_cmd)
-      
+
       unless cmd.exitstatus.zero?
         Chef::Log.error("Configuration validation failed: #{cmd.stderr}")
-        
+
         if rollback_on_failure && config_path && backup_path && ::File.exist?(backup_path)
-          Chef::Log.warn("Rolling back to previous configuration")
+          Chef::Log.warn('Rolling back to previous configuration')
           execute "Restoring #{config_path}" do
             command "cp -f #{backup_path} #{config_path}"
           end
         end
-        
+
         return false
       end
-      
+
       # Perform graceful reload with health checks
       success = graceful_reload(service_name, pre_check: health_check, post_check: health_check)
-      
+
       # Roll back if reload failed and rollback is enabled
       if !success && rollback_on_failure && config_path && backup_path && ::File.exist?(backup_path)
-        Chef::Log.warn("Reload failed, rolling back to previous configuration")
+        Chef::Log.warn('Reload failed, rolling back to previous configuration')
         execute "Restoring #{config_path}" do
           command "cp -f #{backup_path} #{config_path}"
         end
-        
+
         # Try to reload after rollback
         graceful_reload(service_name)
       end
-      
+
       success
     end
   end

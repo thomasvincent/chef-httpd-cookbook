@@ -32,11 +32,11 @@ if node['httpd']['default_vhost']['enabled']
     directory_index node['httpd']['default_vhost']['directory_index']
     error_log node['httpd']['default_vhost']['error_log']
     custom_log node['httpd']['default_vhost']['custom_log']
-    priority 000
+    priority 0o00
     enabled true
     action :create
   end
-  
+
   # Create a SSL version of the default virtual host if SSL is enabled
   if node['httpd']['ssl']['enabled'] && node['httpd']['ssl']['certificate'] && node['httpd']['ssl']['certificate_key']
     httpd_vhost 'default-ssl' do
@@ -59,7 +59,7 @@ if node['httpd']['default_vhost']['enabled']
       ssl_session_tickets node['httpd']['ssl']['session_tickets']
       ssl_session_timeout node['httpd']['ssl']['session_timeout']
       ssl_session_cache node['httpd']['ssl']['session_cache']
-      priority 001
+      priority 0o01
       enabled true
       action :create
     end
@@ -108,13 +108,11 @@ node['httpd']['vhosts'].each do |name, config|
     location_configs config['location_configs'] if config['location_configs']
     files_match_configs config['files_match_configs'] if config['files_match_configs']
     proxy_configs config['proxy_configs'] if config['proxy_configs']
-    enabled config['enabled'].nil? ? true : config['enabled']
+    enabled config['enabled'].nil? || config['enabled']
     action :create
   end
-end
 
-# Create directory structure for each virtual host's docroot
-node['httpd']['vhosts'].each do |name, config|
+  # Create directory structure for each virtual host's docroot
   docroot = config['document_root'] || "#{node['httpd']['sites_dir']}/#{name}/public"
   directory docroot do
     owner node['httpd']['config']['user']
@@ -123,7 +121,7 @@ node['httpd']['vhosts'].each do |name, config|
     recursive true
     action :create
   end
-  
+
   # Create an index.html sample if not already present
   file "#{docroot}/index.html" do
     content "<html><body><h1>Welcome to #{name}</h1><p>This is the default page for the #{name} site.</p></body></html>"
@@ -134,6 +132,6 @@ node['httpd']['vhosts'].each do |name, config|
   end
 end
 
-log "Apache HTTP Server virtual hosts configuration completed" do
+log 'Apache HTTP Server virtual hosts configuration completed' do
   level :info
 end

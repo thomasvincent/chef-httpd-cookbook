@@ -13,12 +13,12 @@ property :version, String,
          description: 'The version of Apache HTTP Server to install'
 
 property :mpm, String,
-         equal_to: %w(event worker prefork),
+         equal_to: %w[event worker prefork],
          default: lazy { node['httpd']['mpm'] },
          description: 'MPM module to use'
 
 property :install_method, String,
-         equal_to: %w(package source),
+         equal_to: %w[package source],
          default: lazy { node['httpd']['install_method'] },
          description: 'Installation method for Apache HTTP Server'
 
@@ -148,11 +148,11 @@ action_class do
 
   def setup_directories
     # Create necessary directories
-    %w(
+    %w[
       conf_available_dir
       conf_enabled_dir
       includes_dir
-    ).each do |dir|
+    ].each do |dir|
       directory node['httpd'][dir] do
         owner 'root'
         group 'root'
@@ -200,8 +200,7 @@ action_class do
           owner 'root'
           group 'root'
           mode '0644'
-          action :create
-          not_if { ::File.exist?("#{node['httpd']['mod_dir']}/#{mod}.load") }
+          action :create_if_missing
         end
       end
 
@@ -235,72 +234,72 @@ action_class do
 
   def configure_selinux
     # Only configure SELinux on RHEL platforms if enabled
-    if platform_family?('rhel', 'fedora', 'amazon') && node['httpd']['selinux']['enabled']
-      # Install SELinux policy package
-      package 'policycoreutils-python' do
-        package_name platform?('amazon', 'fedora') ? 'policycoreutils-python-utils' : 'policycoreutils-python'
-        action :install
-      end
+    return unless platform_family?('rhel', 'fedora', 'amazon') && node['httpd']['selinux']['enabled']
 
-      # Set SELinux context for document root
-      directory node['httpd']['default_vhost']['document_root'] do
-        owner node['httpd']['user']
-        group node['httpd']['group']
-        mode '0755'
-        recursive true
-        action :create
-      end
+    # Install SELinux policy package
+    package 'policycoreutils-python' do
+      package_name platform?('amazon', 'fedora') ? 'policycoreutils-python-utils' : 'policycoreutils-python'
+      action :install
+    end
 
-      execute 'set-httpd-selinux-context' do
-        command "chcon -R -t #{node['httpd']['selinux']['docroot_context']} #{node['httpd']['default_vhost']['document_root']}"
-        not_if "ls -ldZ #{node['httpd']['default_vhost']['document_root']} | grep -q #{node['httpd']['selinux']['docroot_context']}"
+    # Set SELinux context for document root
+    directory node['httpd']['default_vhost']['document_root'] do
+      owner node['httpd']['user']
+      group node['httpd']['group']
+      mode '0755'
+      recursive true
+      action :create
+    end
+
+    execute 'set-httpd-selinux-context' do
+      command "chcon -R -t #{node['httpd']['selinux']['docroot_context']} #{node['httpd']['default_vhost']['document_root']}"
+      not_if "ls -ldZ #{node['httpd']['default_vhost']['document_root']} | grep -q #{node['httpd']['selinux']['docroot_context']}"
+      action :run
+      only_if 'sestatus | grep -q "SELinux status: enabled"'
+    end
+
+    # Configure SELinux ports
+    node['httpd']['selinux']['ports'].each do |port|
+      execute "selinux-port-#{port}" do
+        command "semanage port -a -t http_port_t -p tcp #{port}"
+        not_if "semanage port -l | grep -w 'http_port_t' | grep -w #{port}"
         action :run
         only_if 'sestatus | grep -q "SELinux status: enabled"'
       end
+    end
 
-      # Configure SELinux ports
-      node['httpd']['selinux']['ports'].each do |port|
-        execute "selinux-port-#{port}" do
-          command "semanage port -a -t http_port_t -p tcp #{port}"
-          not_if "semanage port -l | grep -w 'http_port_t' | grep -w #{port}"
-          action :run
-          only_if 'sestatus | grep -q "SELinux status: enabled"'
-        end
+    # Allow HTTP connections
+    if node['httpd']['selinux']['allow_http_connections']
+      execute 'selinux-httpd-connections' do
+        command 'setsebool -P httpd_can_network_connect_http 1'
+        action :run
+        only_if 'sestatus | grep -q "SELinux status: enabled"'
+        not_if 'getsebool httpd_can_network_connect_http | grep -q "on$"'
       end
+    end
 
-      # Allow HTTP connections
-      if node['httpd']['selinux']['allow_http_connections']
-        execute 'selinux-httpd-connections' do
-          command 'setsebool -P httpd_can_network_connect_http 1'
-          action :run
-          only_if 'sestatus | grep -q "SELinux status: enabled"'
-          not_if 'getsebool httpd_can_network_connect_http | grep -q "on$"'
-        end
-      end
+    # Allow general network connections
+    return unless node['httpd']['selinux']['allow_network_connect']
 
-      # Allow general network connections
-      if node['httpd']['selinux']['allow_network_connect']
-        execute 'selinux-httpd-network-connect' do
-          command 'setsebool -P httpd_can_network_connect 1'
-          action :run
-          only_if 'sestatus | grep -q "SELinux status: enabled"'
-          not_if 'getsebool httpd_can_network_connect | grep -q "on$"'
-        end
-      end
+    execute 'selinux-httpd-network-connect' do
+      command 'setsebool -P httpd_can_network_connect 1'
+      action :run
+      only_if 'sestatus | grep -q "SELinux status: enabled"'
+      not_if 'getsebool httpd_can_network_connect | grep -q "on$"'
     end
   end
 
   def configure_firewall
     # Only configure firewall if enabled
-    if node['httpd']['firewall']['enabled']
-      node['httpd']['firewall']['allow_ports'].each do |port|
-        firewall_rule "httpd-port-#{port}" do
-          port port
-          protocol :tcp
-          source node['httpd']['firewall']['source_addresses']
-          command :allow
-          action :create
-        end
+    return unless node['httpd']['firewall']['enabled']
+
+    node['httpd']['firewall']['allow_ports'].each do |port|
+      firewall_rule "httpd-port-#{port}" do
+        port port
+        protocol :tcp
+        source node['httpd']['firewall']['source_addresses']
+        command :allow
+        action :create
       end
     end
   end

@@ -12,11 +12,9 @@ property :service_name, String,
          description: 'The service name'
 
 property :restart_command, [String, nil],
-         default: nil,
          description: 'Command to restart the service'
 
 property :reload_command, [String, nil],
-         default: nil,
          description: 'Command to reload the service'
 
 property :supports, Hash,
@@ -33,7 +31,13 @@ property :max_keepalive_requests, Integer,
 
 property :keep_alive, [String, TrueClass, FalseClass],
          default: 'On',
-         coerce: proc { |v| v == true ? 'On' : (v == false ? 'Off' : v) },
+         coerce: proc { |v|
+           if v == true
+             'On'
+           else
+             (v == false ? 'Off' : v)
+           end
+         },
          description: 'KeepAlive directive value'
 
 property :keep_alive_timeout, Integer,
@@ -53,7 +57,7 @@ property :timeout, Integer,
          default: 300,
          description: 'Timeout directive value'
 
-property :enable_http2, [TrueClass, FalseClass],
+property :enable_http2, [true, false],
          default: true,
          description: 'Whether to enable HTTP/2'
 
@@ -161,29 +165,29 @@ action_class do
     end
 
     # Create SSL configuration if enabled
-    if node['httpd']['ssl']['enabled']
-      httpd_config 'ssl' do
-        source 'ssl.conf.erb'
-        variables(
-          ssl_port: node['httpd']['ssl']['port'],
-          ssl_protocol: node['httpd']['ssl']['protocol'],
-          ssl_cipher_suite: node['httpd']['ssl']['cipher_suite'],
-          ssl_honor_cipher_order: node['httpd']['ssl']['honor_cipher_order'],
-          ssl_session_tickets: node['httpd']['ssl']['session_tickets'],
-          ssl_session_timeout: node['httpd']['ssl']['session_timeout'],
-          ssl_session_cache: node['httpd']['ssl']['session_cache'],
-          ssl_certificate: node['httpd']['ssl']['certificate'],
-          ssl_certificate_key: node['httpd']['ssl']['certificate_key'],
-          ssl_certificate_chain: node['httpd']['ssl']['certificate_chain'],
-          hsts: node['httpd']['ssl']['hsts'],
-          hsts_max_age: node['httpd']['ssl']['hsts_max_age'],
-          hsts_include_subdomains: node['httpd']['ssl']['hsts_include_subdomains'],
-          hsts_preload: node['httpd']['ssl']['hsts_preload'],
-          ocsp_stapling: node['httpd']['ssl']['ocsp_stapling']
-        )
-        action :create
-        only_if { new_resource.service_config_changes }
-      end
+    return unless node['httpd']['ssl']['enabled']
+
+    httpd_config 'ssl' do
+      source 'ssl.conf.erb'
+      variables(
+        ssl_port: node['httpd']['ssl']['port'],
+        ssl_protocol: node['httpd']['ssl']['protocol'],
+        ssl_cipher_suite: node['httpd']['ssl']['cipher_suite'],
+        ssl_honor_cipher_order: node['httpd']['ssl']['honor_cipher_order'],
+        ssl_session_tickets: node['httpd']['ssl']['session_tickets'],
+        ssl_session_timeout: node['httpd']['ssl']['session_timeout'],
+        ssl_session_cache: node['httpd']['ssl']['session_cache'],
+        ssl_certificate: node['httpd']['ssl']['certificate'],
+        ssl_certificate_key: node['httpd']['ssl']['certificate_key'],
+        ssl_certificate_chain: node['httpd']['ssl']['certificate_chain'],
+        hsts: node['httpd']['ssl']['hsts'],
+        hsts_max_age: node['httpd']['ssl']['hsts_max_age'],
+        hsts_include_subdomains: node['httpd']['ssl']['hsts_include_subdomains'],
+        hsts_preload: node['httpd']['ssl']['hsts_preload'],
+        ocsp_stapling: node['httpd']['ssl']['ocsp_stapling']
+      )
+      action :create
+      only_if { new_resource.service_config_changes }
     end
   end
 
@@ -228,7 +232,7 @@ action_class do
         timeout_start_sec: 600,
         timeout_stop_sec: 600,
         restart_sec: 10,
-        limit_nofile: 65536,
+        limit_nofile: 65_536,
         memory_limit: nil, # Leave memory management to system defaults
         cpu_quota: nil     # Leave CPU management to system defaults
       )

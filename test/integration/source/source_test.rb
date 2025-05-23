@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # InSpec test for httpd cookbook source installation suite
 
 # Check if Apache is installed from source
@@ -15,7 +17,7 @@ if os.redhat?
 
   # Check version
   describe command('/usr/local/apache2/bin/httpd -v') do
-    its('stdout') { should match /2\.4\.57/ }
+    its('stdout') { should match(/2\.4\.57/) }
   end
 elsif os.debian?
   describe service('apache2') do
@@ -23,9 +25,9 @@ elsif os.debian?
     it { should be_running }
   end
 
-  # Check version 
+  # Check version
   describe command('/usr/local/apache2/bin/httpd -v') do
-    its('stdout') { should match /2\.4\.57/ }
+    its('stdout') { should match(/2\.4\.57/) }
   end
 end
 
@@ -37,7 +39,7 @@ end
 
 # Check if the event MPM is configured
 describe command('grep -r "event" /usr/local/apache2/conf') do
-  its('stdout') { should match /event/ }
+  its('stdout') { should match(/event/) }
 end
 
 # Check if Apache serves a proper response
@@ -64,5 +66,5 @@ end
 # Configuration syntax
 describe command('/usr/local/apache2/bin/httpd -t') do
   its('exit_status') { should eq 0 }
-  its('stderr') { should match /Syntax OK/ }
+  its('stderr') { should match(/Syntax OK/) }
 end

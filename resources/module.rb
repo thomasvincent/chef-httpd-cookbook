@@ -12,7 +12,6 @@ property :module_name, String,
          description: 'The name of the module to enable or disable'
 
 property :configuration, [String, NilClass],
-         default: nil,
          description: 'Optional configuration for the module'
 
 property :install_package, [true, false],
@@ -86,32 +85,32 @@ action_class do
   end
 
   def create_module_config
-    if new_resource.configuration
-      case node['platform_family']
-      when 'rhel', 'fedora', 'amazon'
-        file "#{node['httpd']['mod_dir']}/#{new_resource.conf_name}" do
-          content new_resource.configuration
-          owner 'root'
-          group 'root'
-          mode '0644'
-          action :create
-          notifies :restart, 'service[httpd]', :delayed
-        end
-      when 'debian'
-        file "#{node['httpd']['mod_dir']}/conf-available/#{new_resource.conf_name}" do
-          content new_resource.configuration
-          owner 'root'
-          group 'root'
-          mode '0644'
-          action :create
-          notifies :restart, 'service[apache2]', :delayed
-        end
+    return unless new_resource.configuration
 
-        link "#{node['httpd']['mod_dir']}/conf-enabled/#{new_resource.conf_name}" do
-          to "#{node['httpd']['mod_dir']}/conf-available/#{new_resource.conf_name}"
-          action :create
-          notifies :restart, 'service[apache2]', :delayed
-        end
+    case node['platform_family']
+    when 'rhel', 'fedora', 'amazon'
+      file "#{node['httpd']['mod_dir']}/#{new_resource.conf_name}" do
+        content new_resource.configuration
+        owner 'root'
+        group 'root'
+        mode '0644'
+        action :create
+        notifies :restart, 'service[httpd]', :delayed
+      end
+    when 'debian'
+      file "#{node['httpd']['mod_dir']}/conf-available/#{new_resource.conf_name}" do
+        content new_resource.configuration
+        owner 'root'
+        group 'root'
+        mode '0644'
+        action :create
+        notifies :restart, 'service[apache2]', :delayed
+      end
+
+      link "#{node['httpd']['mod_dir']}/conf-enabled/#{new_resource.conf_name}" do
+        to "#{node['httpd']['mod_dir']}/conf-available/#{new_resource.conf_name}"
+        action :create
+        notifies :restart, 'service[apache2]', :delayed
       end
     end
   end
@@ -127,7 +126,9 @@ action_class do
     # If there's an associated conf file, enable it
     execute "a2enconf #{new_resource.module_name}" do
       command "/usr/sbin/a2enconf #{new_resource.module_name}"
-      only_if { new_resource.configuration && ::File.exist?("#{node['httpd']['mod_dir']}/conf-available/#{new_resource.conf_name}") }
+      only_if do
+        new_resource.configuration && ::File.exist?("#{node['httpd']['mod_dir']}/conf-available/#{new_resource.conf_name}")
+      end
       not_if { ::File.exist?("#{node['httpd']['mod_dir']}/conf-enabled/#{new_resource.conf_name}") }
       action :run
       notifies :restart, 'service[apache2]', :delayed
@@ -167,8 +168,7 @@ action_class do
       owner 'root'
       group 'root'
       mode '0644'
-      action :create
-      not_if { ::File.exist?("#{node['httpd']['mod_dir']}/#{new_resource.module_name}.load") }
+      action :create_if_missing
       notifies :restart, 'service[httpd]', :delayed
     end
   end

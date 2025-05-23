@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rspec/core/rake_task'
 require 'cookstyle'
 require 'rubocop/rake_task'
@@ -42,7 +44,7 @@ namespace :integration do
       instance.test(:always)
     end
   end
-  
+
   desc 'Run Test Kitchen with Docker'
   task :docker do
     ENV['KITCHEN_LOCAL_YAML'] = '.kitchen.dokken.yml'
@@ -54,4 +56,4 @@ namespace :integration do
 end
 
 # Default
-task default: %w(style spec)
+task default: %w[style spec]
