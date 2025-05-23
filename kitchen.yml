@@ -176,7 +176,7 @@ suites:
           max_connections_per_child: 10000
           server_limit: 16
           thread_limit: 64
-          
+
   - name: telemetry
     run_list:
       - recipe[httpd::default]
@@ -190,8 +190,8 @@ suites:
         telemetry:
           enabled: true
           prometheus:
-            scrape_uri: '/server-status?auto'
-            telemetry_path: '/metrics'
+            scrape_uri: "/server-status?auto"
+            telemetry_path: "/metrics"
             metrics:
               - connections
               - scoreboard

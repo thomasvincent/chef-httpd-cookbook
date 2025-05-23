@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe 'httpd::install' do
@@ -8,7 +10,7 @@ describe 'httpd::install' do
       'service_name' => 'apache2'
     },
     'centos' => {
-      'versions' => ['8', '9'],
+      'versions' => %w[8 9],
       'package_name' => 'httpd',
       'service_name' => 'httpd'
     }
@@ -32,13 +34,17 @@ describe 'httpd::install' do
           end
 
           it 'creates configuration directories' do
-            expect(chef_run).to create_directory('/etc/httpd/conf.d').with(
-              recursive: true
-            ) if platform == 'centos'
+            if platform == 'centos'
+              expect(chef_run).to create_directory('/etc/httpd/conf.d').with(
+                recursive: true
+              )
+            end
 
-            expect(chef_run).to create_directory('/etc/apache2/conf-available').with(
-              recursive: true
-            ) if platform == 'ubuntu'
+            if platform == 'ubuntu'
+              expect(chef_run).to create_directory('/etc/apache2/conf-available').with(
+                recursive: true
+              )
+            end
           end
 
           it 'creates MPM configuration' do

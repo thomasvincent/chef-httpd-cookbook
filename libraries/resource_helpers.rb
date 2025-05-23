@@ -7,11 +7,9 @@ module Httpd
     # @param resource_name [String] The resource name
     # @return [Chef::Resource] The resource or nil if not found
     def find_resource(resource_type, resource_name)
-      begin
-        resources(resource_type => resource_name)
-      rescue Chef::Exceptions::ResourceNotFound
-        nil
-      end
+      resources(resource_type => resource_name)
+    rescue Chef::Exceptions::ResourceNotFound
+      nil
     end
 
     # Find or create a resource in the resource collection
@@ -21,7 +19,7 @@ module Httpd
     # @return [Chef::Resource] The resource
     def find_or_create_resource(resource_type, resource_name, run_context = nil)
       run_context ||= self.run_context
-      
+
       begin
         resources(resource_type => resource_name)
       rescue Chef::Exceptions::ResourceNotFound
@@ -37,9 +35,9 @@ module Httpd
     # @return [Chef::Resource] The resource
     def with_resource(resource_type, resource_name, &block)
       resource = find_resource(resource_type, resource_name)
-      if resource
+      if resource && block_given?
         # Execute the block with the resource
-        block.call(resource) if block_given?
+        block.call(resource)
       end
       resource
     end
@@ -70,7 +68,7 @@ module Httpd
         directory.owner options[:owner] || 'root'
         directory.group options[:group] || 'root'
         directory.mode options[:mode] || '0755'
-        directory.recursive options[:recursive].nil? ? true : options[:recursive]
+        directory.recursive options[:recursive].nil? || options[:recursive]
         directory.notifies(*options[:notifies]) if options[:notifies]
         directory.action options[:action] || :create
       end
@@ -104,6 +102,7 @@ module Httpd
           options.each do |property, value|
             # Skip name since it's already set
             next if property.to_sym == :name
+
             resource.send(property, value) if resource.respond_to?(property)
           end
         end

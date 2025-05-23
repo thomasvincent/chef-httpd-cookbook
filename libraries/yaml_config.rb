@@ -11,9 +11,9 @@ module Httpd
     # @return [Chef::Resource] The file resource
     def create_yaml_config(file_path, config, owner: 'root', group: 'root', mode: '0644')
       require 'yaml'
-      
+
       file file_path do
-        content config.to_yaml
+        content YAML.dump(config)
         owner owner
         group group
         mode mode
@@ -26,7 +26,7 @@ module Httpd
     # @return [Hash] The parsed YAML content or empty hash on error
     def read_yaml_config(file_path)
       require 'yaml'
-      
+
       if ::File.exist?(file_path)
         begin
           YAML.load_file(file_path) || {}
@@ -50,12 +50,12 @@ module Httpd
     def merge_yaml_config(file_path, new_config, owner: 'root', group: 'root', mode: '0644')
       require 'yaml'
       require 'chef/mixin/deep_merge'
-      
+
       existing_config = read_yaml_config(file_path)
       merged_config = Chef::Mixin::DeepMerge.deep_merge(new_config, existing_config)
-      
+
       file file_path do
-        content merged_config.to_yaml
+        content YAML.dump(merged_config)
         owner owner
         group group
         mode mode
@@ -68,9 +68,9 @@ module Httpd
     # @return [String] The YAML string representation
     def hash_to_yaml(hash)
       require 'yaml'
-      
+
       begin
-        hash.to_yaml
+        YAML.dump(hash)
       rescue StandardError => e
         Chef::Log.warn("Error converting hash to YAML: #{e.message}")
         "{}\n" # Return empty YAML object on error
@@ -82,7 +82,7 @@ module Httpd
     # @return [Hash] The parsed hash
     def yaml_to_hash(yaml_string)
       require 'yaml'
-      
+
       begin
         YAML.safe_load(yaml_string) || {}
       rescue StandardError => e

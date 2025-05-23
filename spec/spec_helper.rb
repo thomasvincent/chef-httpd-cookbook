@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'chefspec'
 require 'chefspec/berkshelf'
 require 'simplecov'
@@ -20,7 +22,7 @@ RSpec.configure do |config|
 
   # Specify the operating version to mock Ohai data from (default: nil)
   config.version = '20.04'
-  
+
   # Use color in STDOUT
   config.color = true
 

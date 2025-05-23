@@ -18,7 +18,7 @@ property :aliases, [Array, String],
 
 property :port, [Integer, String],
          default: 80,
-         coerce: proc { |p| p.to_i },
+         coerce: proc(&:to_i),
          description: 'Port to listen on'
 
 property :ip_address, String,
@@ -278,7 +278,7 @@ action_class do
   end
 
   def enable_vhost
-    if node['platform_family'] == 'debian'
+    if platform_family?('debian')
       execute "a2ensite #{new_resource.priority}-#{new_resource.domain}.conf" do
         command "a2ensite #{new_resource.priority}-#{new_resource.domain}.conf"
         not_if { ::File.exist?(conf_enabled_path) }
@@ -295,7 +295,7 @@ action_class do
   end
 
   def disable_vhost
-    if node['platform_family'] == 'debian'
+    if platform_family?('debian')
       execute "a2dissite #{new_resource.priority}-#{new_resource.domain}.conf" do
         command "a2dissite #{new_resource.priority}-#{new_resource.domain}.conf"
         only_if { ::File.exist?(conf_enabled_path) }
@@ -313,23 +313,23 @@ action_class do
 
   def setup_ssl_dependencies
     # If SSL is enabled, ensure the SSL module is enabled
-    if new_resource.ssl_enabled
-      httpd_module 'ssl' do
-        action :enable
-      end
+    return unless new_resource.ssl_enabled
 
-      # Ensure SSL directories exist
-      if new_resource.ssl_cert && new_resource.ssl_key
-        directory ::File.dirname(new_resource.ssl_cert) do
-          recursive true
-          action :create
-        end
+    httpd_module 'ssl' do
+      action :enable
+    end
 
-        directory ::File.dirname(new_resource.ssl_key) do
-          recursive true
-          action :create
-        end
-      end
+    # Ensure SSL directories exist
+    return unless new_resource.ssl_cert && new_resource.ssl_key
+
+    directory ::File.dirname(new_resource.ssl_cert) do
+      recursive true
+      action :create
+    end
+
+    directory ::File.dirname(new_resource.ssl_key) do
+      recursive true
+      action :create
     end
   end
 end

@@ -25,14 +25,13 @@ module Httpd
       # For systems with limited memory, we reduce the MaxRequestWorkers
       # Apache docs suggest 150 active httpd processes is adequate for a busy server
       mem = system_memory_mb
-      
+
       # Use a more precise algorithm based on RAM, but with good defaults
-      case
-      when mem < 1024 # Less than 1GB RAM
+      if mem < 1024 # Less than 1GB RAM
         [15, (mem / 10).to_i].max
-      when mem < 4096 # 1-4GB RAM
+      elsif mem < 4096 # 1-4GB RAM
         [40, (mem / 15).to_i].max
-      when mem < 16384 # 4-16GB RAM
+      elsif mem < 16_384 # 4-16GB RAM
         [100, (mem / 20).to_i].max
       else # More than 16GB RAM
         [250, (mem / 40).to_i].max
@@ -46,14 +45,13 @@ module Httpd
     def calculate_threads_per_child
       # Default to 25 threads per child, but adjust based on CPU count
       cpu_count = cpu_cores
-      
+
       # For low CPU systems, reduce ThreadsPerChild
-      case 
-      when cpu_count <= 2
+      if cpu_count <= 2
         [8, cpu_count * 4].min
-      when cpu_count <= 4
+      elsif cpu_count <= 4
         [16, cpu_count * 4].min
-      when cpu_count <= 8
+      elsif cpu_count <= 8
         25
       else
         # For high CPU systems, increase ThreadsPerChild
@@ -112,7 +110,7 @@ module Httpd
     # Generate Apache version properties from node attributes
     def apache_version_properties
       {
-        major: node['httpd']['version'].split('.')[0],
+        major: node['httpd']['version'].split('.').first,
         minor: node['httpd']['version'].split('.')[1],
         patch: node['httpd']['version'].split('.')[2],
         full: node['httpd']['version']
@@ -169,17 +167,21 @@ module Httpd
     def setup_selinux_for_httpd(ports = [80, 443])
       return unless platform_family?('rhel', 'fedora', 'amazon')
       return unless node['httpd']['selinux'] && node['httpd']['selinux']['enabled']
-      
+
       # First check if SELinux is actually enabled
-      selinux_enabled = shell_out!('getenforce').stdout.strip != 'Disabled' rescue false
+      selinux_enabled = begin
+        shell_out!('getenforce').stdout.strip != 'Disabled'
+      rescue StandardError
+        false
+      end
       return unless selinux_enabled
-      
+
       # Install required packages for SELinux management
       package_name = platform?('amazon', 'fedora') ? 'policycoreutils-python-utils' : 'policycoreutils-python'
       package package_name do
         action :install
       end
-      
+
       # Add ports to SELinux http port type
       Array(ports).each do |port|
         execute "selinux-port-#{port}" do
@@ -188,17 +190,17 @@ module Httpd
           action :run
         end
       end
-      
+
       true
     rescue StandardError => e
       Chef::Log.warn("Error setting up SELinux for httpd: #{e.message}")
       false
     end
-    
+
     # Get correct service name for platform
     def httpd_service_name
       case node['platform_family']
-      when 'debian' 
+      when 'debian'
         'apache2'
       when 'rhel', 'fedora', 'amazon'
         'httpd'

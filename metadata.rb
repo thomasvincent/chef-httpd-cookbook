@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 name 'httpd'
 maintainer 'Thomas Vincent'
 maintainer_email 'thomasvincent@example.com'
@@ -15,7 +17,7 @@ supports 'redhat', '>= 8.0'
 supports 'amazon', '>= 2.0'
 supports 'rocky', '>= 8.0'
 supports 'alma', '>= 8.0'
-supports 'fedora', '>= 35'
+supports 'fedora', '>= 35.0'
 supports 'opensuse', '>= 15.0'
 supports 'arch', '>= 1.0'
 
@@ -23,8 +25,4 @@ supports 'arch', '>= 1.0'
 depends 'selinux', '~> 4.0' # Only required dependency for SELinux management
 depends 'zypper', '~> 0.4', platform_family: 'suse' # Only for SUSE systems
 
-# Suggesting (but not requiring) useful related cookbooks
-suggests 'firewall', '~> 2.7'
-suggests 'logrotate', '~> 3.0'
-suggests 'chef-vault', '~> 4.1' # Modern secrets management
-suggests 'audit', '~> 11.0' # For compliance phase integration
+# Suggesting (but not requiring) useful related cookbooks # Modern secrets management # For compliance phase integration

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Policyfile.rb - Cookbook version policy for httpd cookbook
 name 'httpd'
 
@@ -7,7 +9,7 @@ default_source :supermarket
 # Run List for nodes using this cookbook
 run_list 'httpd::default'
 
-# Cookbook versions we use
+# Cookbook:: versions we use
 cookbook 'httpd', path: '.'
 cookbook 'apt', '~> 7.4'
 cookbook 'yum', '~> 7.4'

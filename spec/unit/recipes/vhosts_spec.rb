@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe 'httpd::vhosts' do
@@ -8,7 +10,7 @@ describe 'httpd::vhosts' do
       'service_name' => 'apache2'
     },
     'centos' => {
-      'versions' => ['8', '9'],
+      'versions' => %w[8 9],
       'package_name' => 'httpd',
       'service_name' => 'httpd'
     }
@@ -89,7 +91,7 @@ describe 'httpd::vhosts' do
           expect(chef_run).to create_directory('/var/www/example').with(
             recursive: true
           )
-          
+
           expect(chef_run).to create_directory('/var/www/secure').with(
             recursive: true
           )

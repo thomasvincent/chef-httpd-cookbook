@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe 'test::httpd_config' do
@@ -8,7 +10,7 @@ describe 'test::httpd_config' do
       'conf_enabled_dir' => '/etc/apache2/conf-enabled'
     },
     'centos' => {
-      'versions' => ['8', '9'],
+      'versions' => %w[8 9],
       'conf_available_dir' => '/etc/httpd/conf.available',
       'conf_enabled_dir' => '/etc/httpd/conf.d'
     }
@@ -39,10 +41,12 @@ describe 'test::httpd_config' do
         # Basic content-based config
         context 'with content property' do
           it 'creates the config file with specified content' do
-            config_path = platform == 'centos' ? 
-              "#{platform_info['conf_enabled_dir']}/test-config.conf" :
-              "#{platform_info['conf_available_dir']}/test-config.conf"
-              
+            config_path = if platform == 'centos'
+                            "#{platform_info['conf_enabled_dir']}/test-config.conf"
+                          else
+                            "#{platform_info['conf_available_dir']}/test-config.conf"
+                          end
+
             expect(chef_run).to create_file(config_path).with(
               content: "# Test config\nServerName localhost\n",
               owner: 'root',
@@ -55,10 +59,12 @@ describe 'test::httpd_config' do
         # Template-based config
         context 'with source property' do
           it 'creates the config file from template' do
-            config_path = platform == 'centos' ? 
-              "#{platform_info['conf_enabled_dir']}/template-config.conf" :
-              "#{platform_info['conf_available_dir']}/template-config.conf"
-              
+            config_path = if platform == 'centos'
+                            "#{platform_info['conf_enabled_dir']}/template-config.conf"
+                          else
+                            "#{platform_info['conf_available_dir']}/template-config.conf"
+                          end
+
             expect(chef_run).to create_template(config_path).with(
               source: 'test-template.erb',
               cookbook: 'httpd',
@@ -76,13 +82,13 @@ describe 'test::httpd_config' do
               expect(chef_run).to create_link("#{platform_info['conf_enabled_dir']}/test-config.conf").with(
                 to: "#{platform_info['conf_available_dir']}/test-config.conf"
               )
-              
+
               expect(chef_run).to create_link("#{platform_info['conf_enabled_dir']}/template-config.conf").with(
                 to: "#{platform_info['conf_available_dir']}/template-config.conf"
               )
             end
           end
-          
+
           context 'when disabling a config' do
             it 'removes the symlink in the conf-enabled directory' do
               expect(chef_run).to delete_link("#{platform_info['conf_enabled_dir']}/disabled-config.conf")

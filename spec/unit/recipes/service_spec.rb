@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe 'httpd::service' do
@@ -8,7 +10,7 @@ describe 'httpd::service' do
       'service_name' => 'apache2'
     },
     'centos' => {
-      'versions' => ['8', '9'],
+      'versions' => %w[8 9],
       'package_name' => 'httpd',
       'service_name' => 'httpd'
     }

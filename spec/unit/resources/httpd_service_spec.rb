@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe 'test::httpd_service' do
@@ -8,7 +10,7 @@ describe 'test::httpd_service' do
       'conf_dir' => '/etc/apache2'
     },
     'centos' => {
-      'versions' => ['8', '9'],
+      'versions' => %w[8 9],
       'service_name' => 'httpd',
       'conf_dir' => '/etc/httpd/conf'
     }
@@ -59,10 +61,12 @@ describe 'test::httpd_service' do
           end
 
           it 'creates a systemd override directory' do
-            service_path = platform == 'centos' ? 
-              '/etc/systemd/system/httpd.service.d' :
-              '/etc/systemd/system/apache2.service.d'
-              
+            service_path = if platform == 'centos'
+                             '/etc/systemd/system/httpd.service.d'
+                           else
+                             '/etc/systemd/system/apache2.service.d'
+                           end
+
             expect(chef_run).to create_directory(service_path).with(
               owner: 'root',
               group: 'root',
@@ -72,10 +76,12 @@ describe 'test::httpd_service' do
           end
 
           it 'creates a systemd override file' do
-            service_path = platform == 'centos' ? 
-              '/etc/systemd/system/httpd.service.d/override.conf' :
-              '/etc/systemd/system/apache2.service.d/override.conf'
-              
+            service_path = if platform == 'centos'
+                             '/etc/systemd/system/httpd.service.d/override.conf'
+                           else
+                             '/etc/systemd/system/apache2.service.d/override.conf'
+                           end
+
             expect(chef_run).to create_template(service_path).with(
               source: 'systemd-override.conf.erb',
               cookbook: 'httpd',
@@ -86,10 +92,12 @@ describe 'test::httpd_service' do
           end
 
           it 'triggers systemd daemon-reload' do
-            service_path = platform == 'centos' ? 
-              '/etc/systemd/system/httpd.service.d/override.conf' :
-              '/etc/systemd/system/apache2.service.d/override.conf'
-              
+            service_path = if platform == 'centos'
+                             '/etc/systemd/system/httpd.service.d/override.conf'
+                           else
+                             '/etc/systemd/system/apache2.service.d/override.conf'
+                           end
+
             template = chef_run.template(service_path)
             expect(template).to notify('execute[systemctl-daemon-reload]').immediately
           end

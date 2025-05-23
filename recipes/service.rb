@@ -37,7 +37,7 @@ httpd_service node['httpd']['service_name'] do
 end
 
 # Create systemd service override for better reliability
-if %w(rhel fedora amazon debian).include?(node['platform_family'])
+if platform_family?('rhel', 'fedora', 'amazon', 'debian')
   directory "/etc/systemd/system/#{node['httpd']['service_name']}.service.d" do
     owner 'root'
     group 'root'
@@ -55,7 +55,7 @@ if %w(rhel fedora amazon debian).include?(node['platform_family'])
       timeout_start_sec: 600,
       timeout_stop_sec: 600,
       restart_sec: 10,
-      limit_nofile: 65536,
+      limit_nofile: 65_536,
       memory_limit: nil,
       cpu_quota: nil
     )
@@ -94,9 +94,9 @@ end
 service node['httpd']['service_name'] do
   service_name node['httpd']['service_name']
   supports status: true, restart: true, reload: true
-  action [:enable, :start]
+  action %i[enable start]
 end
 
-log "Apache HTTP Server service configured and started" do
+log 'Apache HTTP Server service configured and started' do
   level :info
 end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe 'test::httpd_vhost' do
@@ -10,7 +12,7 @@ describe 'test::httpd_vhost' do
       'a2dissite_cmd' => '/usr/sbin/a2dissite'
     },
     'centos' => {
-      'versions' => ['8', '9'],
+      'versions' => %w[8 9],
       'conf_available_dir' => '/etc/httpd/conf.available',
       'conf_enabled_dir' => '/etc/httpd/conf.d'
     }
@@ -48,7 +50,7 @@ describe 'test::httpd_vhost' do
             stub_command("#{platform_info['a2ensite_cmd']} 010-example.com.conf").and_return(true)
             stub_command("#{platform_info['a2dissite_cmd']} 020-disabled.com.conf").and_return(true)
           end
-          
+
           # Stub httpd_module resource for SSL
           allow_any_instance_of(Chef::Recipe).to receive(:httpd_module).and_return(nil)
         end
@@ -64,10 +66,10 @@ describe 'test::httpd_vhost' do
           end
 
           it 'creates the virtual host configuration file' do
-            config_path = platform == 'centos' ? 
-              "#{platform_info['conf_available_dir']}/010-example.com.conf" :
-              "#{platform_info['conf_available_dir']}/010-example.com.conf"
-              
+            if platform == 'centos'
+            end
+            config_path = "#{platform_info['conf_available_dir']}/010-example.com.conf"
+
             expect(chef_run).to create_template(config_path).with(
               source: 'vhost.conf.erb',
               cookbook: 'httpd',
@@ -113,10 +115,10 @@ describe 'test::httpd_vhost' do
           end
 
           it 'creates the virtual host configuration file with SSL settings' do
-            config_path = platform == 'centos' ? 
-              "#{platform_info['conf_available_dir']}/010-secure.example.com.conf" :
-              "#{platform_info['conf_available_dir']}/010-secure.example.com.conf"
-              
+            if platform == 'centos'
+            end
+            config_path = "#{platform_info['conf_available_dir']}/010-secure.example.com.conf"
+
             expect(chef_run).to create_template(config_path)
             # We should check the content here, but the variables are complex in this case
           end
