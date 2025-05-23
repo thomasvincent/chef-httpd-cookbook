@@ -3,22 +3,22 @@
 source 'https://rubygems.org'
 
 group :development do
-  gem 'chef'
-  gem 'chef-cli'
-  gem 'chefspec'
-  gem 'cookstyle'
-  gem 'rspec'
+  gem 'chef', '~> 18.0'
+  gem 'chef-cli', '~> 5.6'
+  gem 'chefspec', '~> 9.3'
+  gem 'cookstyle', '~> 7.32'
+  gem 'rspec', '~> 3.11'
 end
 
 group :test do
-  gem 'inspec-bin'
-  gem 'kitchen-dokken'
-  gem 'kitchen-inspec'
-  gem 'rspec-its'
-  gem 'rspec_junit_formatter'
-  gem 'simplecov'
-  gem 'simplecov-console'
-  gem 'test-kitchen'
+  gem 'inspec-bin', '>= 5.21'
+  gem 'kitchen-dokken', '~> 2.20'
+  gem 'kitchen-inspec', '~> 2.6'
+  gem 'rspec-its', '~> 1.3'
+  gem 'rspec_junit_formatter', '~> 0.6'
+  gem 'simplecov', '~> 0.22'
+  gem 'simplecov-console', '~> 0.9'
+  gem 'test-kitchen', '~> 3.5'
 end
 
 group :docs do

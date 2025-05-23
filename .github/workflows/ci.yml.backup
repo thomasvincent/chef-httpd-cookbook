@@ -1,9 +1,5 @@
 name: CI
 
-permissions:
-  contents: read
-  actions: read
-
 on:
   push:
     branches: [main]
@@ -63,11 +59,16 @@ jobs:
       matrix:
         os:
           [
+            ubuntu-20.04,
             ubuntu-22.04,
             ubuntu-24.04,
+            centos-stream-8,
             centos-stream-9,
+            rockylinux-8,
             rockylinux-9,
+            debian-11,
             debian-12,
+            amazon-2,
             amazon-2023,
           ]
         suite:
@@ -113,6 +114,7 @@ jobs:
     timeout-minutes: 60
     strategy:
       matrix:
+        os: [ubuntu-20.04, ubuntu-22.04, centos-stream-8, rockylinux-9]
         suite: [source]
       fail-fast: false
     env:
@@ -155,6 +157,7 @@ jobs:
     timeout-minutes: 60
     strategy:
       matrix:
+        os: [ubuntu-20.04, ubuntu-22.04, centos-stream-8, rockylinux-9]
         suite: [prefork-mpm]
       fail-fast: false
     env:
