@@ -1,0 +1,267 @@
+name: "Chef Cookstyle Analysis"
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+  schedule:
+    - cron: '0 2 * * *'  # Daily at 2:00 AM UTC
+  workflow_dispatch:  # Allow manual triggering
+
+# Minimal required permissions following principle of least privilege
+permissions:
+  contents: read
+  security-events: write
+  pull-requests: write
+  actions: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  RUBY_VERSION: '3.3'
+
+jobs:
+  cookstyle:
+    name: Analyze
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    outputs:
+      status: ${{ steps.analyze.outputs.status }}
+      offense-count: ${{ steps.analyze.outputs.offense_count }}
+      file-count: ${{ steps.analyze.outputs.file_count }}
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ env.RUBY_VERSION }}
+          bundler-cache: true
+
+      - name: Cache Chef dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.chef
+            ~/.chefdk
+            vendor/bundle
+          key: chef-${{ runner.os }}-${{ hashFiles('**/Gemfile.lock', '**/metadata.rb') }}
+          restore-keys: |
+            chef-${{ runner.os }}-
+
+      - name: Install Cookstyle
+        run: |
+          gem install cookstyle --no-document
+          echo "COOKSTYLE_VERSION=$(cookstyle --version | awk '{print $2}')" >> $GITHUB_ENV
+
+      - name: Detect cookbooks
+        id: detect
+        run: |
+          if find . -name "metadata.rb" -o -name "metadata.json" | grep -q .; then
+            echo "found=true" >> $GITHUB_OUTPUT
+          else
+            echo "found=false" >> $GITHUB_OUTPUT
+            echo "::warning::No Chef cookbooks detected"
+          fi
+
+      - name: Run Cookstyle
+        if: steps.detect.outputs.found == 'true'
+        id: analyze
+        run: |
+          set +e
+          
+          mkdir -p reports
+          cookstyle \
+            --format json --out reports/cookstyle.json \
+            --format html --out reports/cookstyle.html \
+            --format progress
+          
+          EXIT_CODE=$?
+          echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
+          
+          case $EXIT_CODE in
+            0) echo "status=success" >> $GITHUB_OUTPUT ;;
+            1) 
+              echo "status=failure" >> $GITHUB_OUTPUT
+              if [[ -f reports/cookstyle.json ]]; then
+                echo "offense_count=$(jq '.summary.offense_count' reports/cookstyle.json)" >> $GITHUB_OUTPUT
+                echo "file_count=$(jq '.summary.inspected_file_count' reports/cookstyle.json)" >> $GITHUB_OUTPUT
+              fi
+              ;;
+            *) 
+              echo "status=error" >> $GITHUB_OUTPUT
+              exit 1
+              ;;
+          esac
+
+      - name: Convert to SARIF
+        if: steps.analyze.outputs.exit_code && steps.analyze.outputs.status != 'error'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            const cookstyleData = JSON.parse(fs.readFileSync('reports/cookstyle.json', 'utf8'));
+            
+            const rules = {};
+            const results = [];
+            
+            // Process offenses
+            cookstyleData.files.forEach(file => {
+              file.offenses.forEach(offense => {
+                // Add rule if not exists
+                if (!rules[offense.cop_name]) {
+                  rules[offense.cop_name] = {
+                    id: offense.cop_name,
+                    name: offense.cop_name,
+                    shortDescription: { text: offense.cop_name },
+                    fullDescription: { text: offense.message },
+                    defaultConfiguration: {
+                      level: offense.severity === 'error' ? 'error' : 
+                             offense.severity === 'warning' ? 'warning' : 'note'
+                    },
+                    properties: {
+                      tags: offense.correctable ? ['auto-correctable'] : []
+                    }
+                  };
+                }
+                
+                // Add result
+                results.push({
+                  ruleId: offense.cop_name,
+                  level: rules[offense.cop_name].defaultConfiguration.level,
+                  message: { text: offense.message },
+                  locations: [{
+                    physicalLocation: {
+                      artifactLocation: {
+                        uri: file.path,
+                        uriBaseId: "%SRCROOT%"
+                      },
+                      region: {
+                        startLine: offense.location.line || 1,
+                        startColumn: offense.location.column || 1,
+                        endLine: offense.location.last_line || offense.location.line || 1,
+                        endColumn: offense.location.last_column || offense.location.column || 1
+                      }
+                    }
+                  }]
+                });
+              });
+            });
+            
+            // Create SARIF
+            const sarif = {
+              "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+              version: "2.1.0",
+              runs: [{
+                tool: {
+                  driver: {
+                    name: "Cookstyle",
+                    version: process.env.COOKSTYLE_VERSION || "unknown",
+                    informationUri: "https://github.com/chef/cookstyle",
+                    rules: Object.values(rules)
+                  }
+                },
+                results: results,
+                automationDetails: {
+                  id: `cookstyle/${context.runId}`,
+                  category: context.eventName === 'pull_request' ? 
+                    `cookstyle-pr-${context.payload.pull_request.number}` : 'cookstyle'
+                }
+              }]
+            };
+            
+            fs.writeFileSync('reports/cookstyle.sarif', JSON.stringify(sarif, null, 2));
+            core.notice('SARIF report generated successfully');
+
+      - name: Upload SARIF
+        if: hashFiles('reports/cookstyle.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: reports/cookstyle.sarif
+          wait-for-processing: ${{ github.event_name != 'pull_request' }}
+
+      - name: Upload artifacts
+        if: always() && steps.analyze.outputs.exit_code
+        uses: actions/upload-artifact@v4
+        with:
+          name: cookstyle-reports
+          path: reports/
+          retention-days: 30
+
+  comment:
+    name: PR Comment
+    needs: cookstyle
+    if: github.event_name == 'pull_request' && always()
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      
+    steps:
+      - name: Find comment
+        uses: peter-evans/find-comment@v3
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: '🍳 Cookstyle Analysis'
+
+      - name: Create or update comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ## 🍳 Cookstyle Analysis
+            
+            ${{ needs.cookstyle.outputs.status == 'success' && '✅ **All checks passed!**' || '⚠️ **Issues detected**' }}
+            
+            ${{ needs.cookstyle.outputs.offense-count && format('- **Offenses**: {0}', needs.cookstyle.outputs.offense-count) || '' }}
+            ${{ needs.cookstyle.outputs.file-count && format('- **Files analyzed**: {0}', needs.cookstyle.outputs.file-count) || '' }}
+            
+            ---
+            📋 [View workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            🔒 [View in Security tab](${{ github.server_url }}/${{ github.repository }}/security/code-scanning?query=tool:cookstyle)
+          edit-mode: replace
+
+  # Reusable workflow for matrix builds
+  analyze-matrix:
+    name: Analyze ${{ matrix.cookbook }}
+    if: false  # Enable this job if you have multiple cookbooks
+    strategy:
+      matrix:
+        cookbook: 
+          - cookbook1
+          - cookbook2
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ env.RUBY_VERSION }}
+          
+      - run: |
+          gem install cookstyle --no-document
+          cd ${{ matrix.cookbook }}
+          cookstyle --format json --out ../cookstyle-${{ matrix.cookbook }}.json
+          
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cookstyle-${{ matrix.cookbook }}
+          path: cookstyle-${{ matrix.cookbook }}.json
