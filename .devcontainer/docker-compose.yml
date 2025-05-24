@@ -29,9 +29,9 @@ services:
     depends_on:
       - chef-dev
 
-  # Example CentOS test target  
-  test-centos:
-    image: centos:8
+  # Example Rocky Linux test target (CentOS 8 replacement)
+  test-rocky:
+    image: rockylinux:8
     command: sleep infinity
     networks:
       - chef-test
