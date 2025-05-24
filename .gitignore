@@ -2,9 +2,8 @@
 .kitchen.local.yml
 coverage/
 .idea/
-.vscode/
+# VS Code settings are project-specific, so we don't ignore .vscode/
 *.lock
-.ruby-version
 *.swp
 *.swo
 .bundle/

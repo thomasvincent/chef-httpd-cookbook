@@ -6,6 +6,61 @@
 
 A modern, advanced Chef cookbook to install and configure Apache HTTP Server with comprehensive functionality.
 
+## Ruby Environment Setup
+
+This project uses Ruby 3.3.0 and is configured to work with **rbenv** for Ruby version management.
+
+### Prerequisites
+
+1. Install rbenv (if not already installed):
+   ```bash
+   brew install rbenv
+   ```
+
+2. Initialize rbenv in your shell:
+   ```bash
+   echo 'eval "$(rbenv init -)"' >> ~/.zshrc  # or ~/.bashrc
+   source ~/.zshrc  # or source ~/.bashrc
+   ```
+
+### Quick Setup
+
+Run the setup script:
+```bash
+./bin/setup-ruby
+```
+
+This will:
+- Install Ruby 3.3.0 via rbenv
+- Set the local Ruby version
+- Install bundler
+- Install all gem dependencies
+
+### Manual Setup
+
+If you prefer to set up manually:
+```bash
+rbenv install 3.3.0
+rbenv local 3.3.0
+gem install bundler
+bundle install
+```
+
+### Resolving Version Manager Conflicts
+
+If you have both asdf and rbenv installed, this project is configured to use rbenv. To avoid conflicts:
+
+1. Ensure rbenv is loaded in your shell before asdf
+2. Or temporarily disable asdf for this project:
+   ```bash
+   export PATH="/opt/homebrew/bin/rbenv:$PATH"
+   eval "$(rbenv init -)"
+   ```
+
+### VS Code Integration
+
+The project includes VS Code settings that configure the Ruby LSP to use rbenv. If you're using VS Code, the ruby-lsp extension should work automatically after running the setup.
+
 ## Requirements
 
 ### Platforms
