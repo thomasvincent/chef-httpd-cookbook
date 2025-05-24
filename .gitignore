@@ -11,10 +11,10 @@ coverage/
 vendor/
 .docker/
 .vagrant/
-Berksfile.lock
 Gemfile.lock
 .rspec_status
 tmp/
 .env
 .DS_Store
 node_modules/
+.devcontainer/Gemfile.lock
