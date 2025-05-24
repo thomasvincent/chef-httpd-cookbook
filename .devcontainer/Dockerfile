@@ -22,10 +22,16 @@ RUN apt-get update && apt-get install -y \
     openssh-client \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Chef Workstation
-RUN wget https://packages.chef.io/files/stable/chef-workstation/24.2.1058/ubuntu/22.04/chef-workstation_24.2.1058-1_amd64.deb \
-    && dpkg -i chef-workstation_24.2.1058-1_amd64.deb \
-    && rm chef-workstation_24.2.1058-1_amd64.deb
+# Install Chef Workstation (multi-architecture support)
+RUN ARCH=$(dpkg --print-architecture) && \
+    if [ "$ARCH" = "arm64" ]; then \
+        CHEF_ARCH="aarch64"; \
+    else \
+        CHEF_ARCH="amd64"; \
+    fi && \
+    wget "https://packages.chef.io/files/stable/chef-workstation/24.2.1058/ubuntu/22.04/chef-workstation_24.2.1058-1_${CHEF_ARCH}.deb" \
+    && dpkg -i "chef-workstation_24.2.1058-1_${CHEF_ARCH}.deb" \
+    && rm "chef-workstation_24.2.1058-1_${CHEF_ARCH}.deb"
 
 # Install Ruby (for ChefSpec and other Ruby-based testing)
 RUN apt-get update && apt-get install -y \
@@ -33,9 +39,9 @@ RUN apt-get update && apt-get install -y \
     ruby-bundler \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Docker CLI for kitchen-docker
+# Install Docker CLI for kitchen-docker (multi-architecture support)
 RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - \
-    && add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" \
+    && add-apt-repository "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" \
     && apt-get update \
     && apt-get install -y docker-ce-cli \
     && rm -rf /var/lib/apt/lists/*

@@ -5,6 +5,7 @@ This directory contains the configuration for a development container that provi
 ## Features
 
 - **Chef Workstation**: Full Chef development tools pre-installed
+- **Multi-Architecture Support**: Works on both AMD64 (Intel/AMD) and ARM64 (Apple Silicon) systems
 - **Docker-in-Docker**: Run Test Kitchen with Docker driver inside the container
 - **Ruby Environment**: Ruby and Bundler configured for ChefSpec tests
 - **Testing Tools**: Cookstyle, ChefSpec, InSpec, and Kitchen pre-installed
@@ -66,7 +67,7 @@ kitchen test
 
 The docker-compose.yml includes example test target containers:
 - `test-ubuntu`: Ubuntu 22.04 for testing
-- `test-centos`: CentOS 8 for testing
+- `test-rocky`: Rocky Linux 8 for testing (CentOS 8 replacement)
 
 These can be used as Kitchen targets with the Docker driver.
 

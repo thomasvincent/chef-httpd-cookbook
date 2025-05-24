@@ -65,7 +65,7 @@
 
   "forwardPorts": [80, 443, 8080, 9090],
   
-  "postCreateCommand": "bundle install && chef gem install cookstyle && chef gem install kitchen-docker",
+  "postCreateCommand": "cd /workspace && bundle install && chef gem install cookstyle && chef gem install kitchen-docker",
   
   "remoteUser": "chef",
   
