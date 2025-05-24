@@ -1,1 +1,3 @@
-ruby 3.3.0
+# Using rbenv for Ruby version management
+# If you use asdf, uncomment the line below:
+# ruby 3.3.0

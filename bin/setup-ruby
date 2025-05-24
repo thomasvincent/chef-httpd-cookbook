@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "Setting up Ruby environment for Chef HTTPD Cookbook..."
+
+# Prefer rbenv over asdf for consistency
+if command -v rbenv &> /dev/null; then
+    echo "Using rbenv for Ruby version management"
+    
+    # Install Ruby version if not already installed
+    if ! rbenv versions | grep -q 3.3.0; then
+        echo "Installing Ruby 3.3.0..."
+        rbenv install 3.3.0
+    fi
+    
+    # Set local Ruby version
+    rbenv local 3.3.0
+    
+    # Rehash to ensure binaries are available
+    rbenv rehash
+    
+elif command -v asdf &> /dev/null; then
+    echo "WARNING: asdf detected but rbenv is preferred for this project."
+    echo "To avoid conflicts, please use rbenv or unset asdf from your shell."
+    echo ""
+    echo "To temporarily use rbenv in this shell session:"
+    echo "  export PATH=\"$HOME/.rbenv/bin:$PATH\""
+    echo "  eval \"\$(rbenv init -)\""
+    exit 1
+else
+    echo "No Ruby version manager found. Please install rbenv."
+    echo "Install rbenv with: brew install rbenv"
+    exit 1
+fi
+
+echo "Ruby environment setup complete!"
+echo "Current Ruby version: $(ruby --version)"
+
+# Install bundler if not present
+if ! gem list bundler -i > /dev/null 2>&1; then
+    echo "Installing bundler..."
+    gem install bundler
+fi
+
+echo "Installing gems..."
+bundle install
+
+echo ""
+echo "Setup complete! You can now run:"
+echo "  - 'bundle exec cookstyle' for linting"
+echo "  - 'bundle exec rspec' for unit tests"
+echo "  - 'kitchen test' for integration tests"
