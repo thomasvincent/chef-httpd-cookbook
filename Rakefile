@@ -5,22 +5,11 @@ require 'cookstyle'
 require 'rubocop/rake_task'
 require 'kitchen/rake_tasks'
 
-# Style tests
-namespace :style do
-  desc 'Run Ruby style checks'
-  RuboCop::RakeTask.new(:ruby) do |task|
-    task.options << '--display-cop-names'
-  end
-
-  desc 'Run Chef style checks'
-  RuboCop::RakeTask.new(:chef) do |task|
-    task.options << '--display-cop-names'
-    task.patterns = ['**/*.rb']
-  end
+# Style tests - Use Cookstyle for all Ruby/Chef style checks
+desc 'Run Cookstyle style checks'
+RuboCop::RakeTask.new(:style) do |task|
+  task.options << '--display-cop-names'
 end
-
-desc 'Run all style checks'
-task style: ['style:chef', 'style:ruby']
 
 # Rspec and ChefSpec
 desc 'Run ChefSpec examples'
