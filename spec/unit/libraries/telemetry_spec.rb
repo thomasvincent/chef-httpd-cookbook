@@ -50,7 +50,7 @@ describe 'Httpd::Telemetry' do
     it 'passes correct default metrics' do
       allow(telemetry).to receive(:apache_has_prometheus_module?).and_return(true)
 
-      expected_metrics = %w[
+      expected_metrics = %w(
         connections
         scoreboard
         cpu
@@ -58,7 +58,7 @@ describe 'Httpd::Telemetry' do
         throughput
         response_time
         workers
-      ]
+      )
 
       expect(telemetry).to receive(:configure_builtin_prometheus_exporter).with(
         '/server-status?auto',
@@ -217,7 +217,7 @@ describe 'Httpd::Telemetry' do
 
       it 'enables and starts the service' do
         expect(telemetry).to receive(:service).with('apache-exporter')
-        expect(service).to receive(:action).with(%i[enable start])
+        expect(service).to receive(:action).with(%i(enable start))
 
         telemetry.configure_external_prometheus_exporter(nil, '/server-status?auto', '/metrics', nil)
       end

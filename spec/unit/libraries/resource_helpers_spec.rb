@@ -150,18 +150,18 @@ describe Httpd::ResourceHelpers do
       resources_hash = {
         '/etc/httpd/conf/site1.conf' => {
           content: 'Site 1 configuration',
-          owner: 'apache'
+          owner: 'apache',
         },
         '/etc/httpd/conf/site2.conf' => {
           content: 'Site 2 configuration',
-          owner: 'www-data'
-        }
+          owner: 'www-data',
+        },
       }
 
       default_options = {
         group: 'apache',
         mode: '0640',
-        action: :create
+        action: :create,
       }
 
       resources = subject.create_resources(:file, resources_hash, default_options)

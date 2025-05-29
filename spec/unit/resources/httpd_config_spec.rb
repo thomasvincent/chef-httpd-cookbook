@@ -7,13 +7,13 @@ describe 'test::httpd_config' do
     'ubuntu' => {
       'versions' => ['20.04', '22.04'],
       'conf_available_dir' => '/etc/apache2/conf-available',
-      'conf_enabled_dir' => '/etc/apache2/conf-enabled'
+      'conf_enabled_dir' => '/etc/apache2/conf-enabled',
     },
     'centos' => {
-      'versions' => %w[8 9],
+      'versions' => %w(8 9),
       'conf_available_dir' => '/etc/httpd/conf.available',
-      'conf_enabled_dir' => '/etc/httpd/conf.d'
-    }
+      'conf_enabled_dir' => '/etc/httpd/conf.d',
+    },
   }
 
   platforms.each do |platform, platform_info|
@@ -100,36 +100,3 @@ describe 'test::httpd_config' do
   end
 end
 
-# Create test cookbook for our custom resource tests
-file_cache_path = Chef::Config[:file_cache_path]
-
-cookbook_name = 'test'
-cookbook_path = "#{file_cache_path}/cookbooks/#{cookbook_name}"
-
-directory "#{cookbook_path}/recipes" do
-  recursive true
-end
-
-cookbook_file "#{cookbook_path}/metadata.rb" do
-  content "name '#{cookbook_name}'\nversion '0.1.0'"
-end
-
-cookbook_file "#{cookbook_path}/recipes/httpd_config.rb" do
-  content <<-EOH
-    httpd_config 'test-config' do
-      content "# Test config\\nServerName localhost\\n"
-      action :create
-    end
-
-    httpd_config 'template-config' do
-      source 'test-template.erb'
-      action :create
-    end
-
-    httpd_config 'disabled-config' do
-      content "# Disabled config"
-      enable false
-      action :create
-    end
-  EOH
-end

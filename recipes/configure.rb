@@ -18,8 +18,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-unified_mode true
-
 # Create main configuration
 httpd_config 'main' do
   content <<~CONFIG

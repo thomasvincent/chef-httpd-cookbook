@@ -21,8 +21,8 @@ supports 'fedora', '>= 35.0'
 supports 'opensuse', '>= 15.0'
 supports 'arch', '>= 1.0'
 
-# We can handle our own firewall and logging
-depends 'selinux', '~> 4.0' # Only required dependency for SELinux management
-depends 'zypper', '~> 0.4', platform_family: 'suse' # Only for SUSE systems
+# We can handle our own firewall, logging, and SELinux
+# depends 'selinux', '~> 4.0' # Removed - causes warnings, we handle SELinux directly
+depends 'zypper', '~> 0.4' # Only for SUSE systems
 
 # Suggesting (but not requiring) useful related cookbooks # Modern secrets management # For compliance phase integration

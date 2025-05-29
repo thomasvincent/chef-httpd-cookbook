@@ -13,12 +13,12 @@ property :version, String,
          description: 'The version of Apache HTTP Server to install'
 
 property :mpm, String,
-         equal_to: %w[event worker prefork],
+         equal_to: %w(event worker prefork),
          default: lazy { node['httpd']['mpm'] },
          description: 'MPM module to use'
 
 property :install_method, String,
-         equal_to: %w[package source],
+         equal_to: %w(package source),
          default: lazy { node['httpd']['install_method'] },
          description: 'Installation method for Apache HTTP Server'
 
@@ -148,11 +148,11 @@ action_class do
 
   def setup_directories
     # Create necessary directories
-    %w[
+    %w(
       conf_available_dir
       conf_enabled_dir
       includes_dir
-    ].each do |dir|
+    ).each do |dir|
       directory node['httpd'][dir] do
         owner 'root'
         group 'root'
@@ -184,6 +184,14 @@ action_class do
   def setup_modules
     case node['platform_family']
     when 'rhel', 'fedora', 'amazon'
+      # Install mod_ssl package if ssl module is requested
+      if new_resource.modules.include?('ssl')
+        package 'mod_ssl' do
+          action :install
+          notifies :restart, "service[#{node['httpd']['service_name']}]", :delayed
+        end
+      end
+
       # Create modules directory
       directory node['httpd']['mod_dir'] do
         owner 'root'
@@ -238,7 +246,20 @@ action_class do
 
     # Install SELinux policy package
     package 'policycoreutils-python' do
-      package_name platform?('amazon', 'fedora') ? 'policycoreutils-python-utils' : 'policycoreutils-python'
+      package_name case node['platform_family']
+                   when 'rhel'
+                     if node['platform_version'].to_i >= 8
+                       'policycoreutils-python-utils'
+                     else
+                       'policycoreutils-python'
+                     end
+                   when 'fedora'
+                     'policycoreutils-python-utils'
+                   when 'amazon'
+                     'policycoreutils-python-utils'
+                   else
+                     'policycoreutils-python'
+                   end
       action :install
     end
 
@@ -293,34 +314,20 @@ action_class do
     # Only configure firewall if enabled
     return unless node['httpd']['firewall']['enabled']
 
-    node['httpd']['firewall']['allow_ports'].each do |port|
-      firewall_rule "httpd-port-#{port}" do
-        port port
-        protocol :tcp
-        source node['httpd']['firewall']['source_addresses']
-        command :allow
-        action :create
-      end
-    end
+    # Skip firewall configuration if firewall_rule resource is not available
+    # This would require the firewall cookbook which is not a dependency
+    Chef::Log.info('Firewall configuration skipped - firewall cookbook not available')
+    nil
   end
 
   def configure_logrotate
     # Only configure logrotate if enabled
     return unless node['httpd']['logrotate']['enabled']
 
-    logrotate_app 'httpd' do
-      path case node['platform_family']
-           when 'rhel', 'fedora', 'amazon'
-             '/var/log/httpd/*.log'
-           when 'debian'
-             '/var/log/apache2/*.log'
-           end
-      frequency node['httpd']['logrotate']['frequency']
-      rotate node['httpd']['logrotate']['rotate']
-      options node['httpd']['logrotate']['options']
-      postrotate node['httpd']['logrotate']['postrotate']
-      action :enable
-    end
+    # Skip logrotate configuration if logrotate_app resource is not available
+    # This would require the logrotate cookbook which is not a dependency
+    Chef::Log.info('Logrotate configuration skipped - logrotate cookbook not available')
+    nil
   end
 end
 

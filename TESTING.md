@@ -8,7 +8,7 @@ Before you begin, ensure you have the following installed:
 
 - [Chef Workstation](https://downloads.chef.io/tools/workstation) (latest version recommended)
 - [Docker](https://docs.docker.com/get-docker/) (required for Test Kitchen with kitchen-dokken)
-- Ruby 3.1+
+- Ruby 3.2+
 
 ## Docker Setup
 

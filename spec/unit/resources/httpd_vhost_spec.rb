@@ -9,13 +9,13 @@ describe 'test::httpd_vhost' do
       'conf_available_dir' => '/etc/apache2/sites-available',
       'conf_enabled_dir' => '/etc/apache2/sites-enabled',
       'a2ensite_cmd' => '/usr/sbin/a2ensite',
-      'a2dissite_cmd' => '/usr/sbin/a2dissite'
+      'a2dissite_cmd' => '/usr/sbin/a2dissite',
     },
     'centos' => {
-      'versions' => %w[8 9],
+      'versions' => %w(8 9),
       'conf_available_dir' => '/etc/httpd/conf.available',
-      'conf_enabled_dir' => '/etc/httpd/conf.d'
-    }
+      'conf_enabled_dir' => '/etc/httpd/conf.d',
+    },
   }
 
   platforms.each do |platform, platform_info|
@@ -138,47 +138,3 @@ describe 'test::httpd_vhost' do
   end
 end
 
-# Create test cookbook for our custom resource tests
-file_cache_path = Chef::Config[:file_cache_path]
-
-cookbook_name = 'test'
-cookbook_path = "#{file_cache_path}/cookbooks/#{cookbook_name}"
-
-directory "#{cookbook_path}/recipes" do
-  recursive true
-end
-
-cookbook_file "#{cookbook_path}/metadata.rb" do
-  content "name '#{cookbook_name}'\nversion '0.1.0'"
-end
-
-cookbook_file "#{cookbook_path}/recipes/httpd_vhost.rb" do
-  content <<-EOH
-    httpd_vhost 'example.com' do
-      port 80
-      document_root '/var/www/example.com'
-      directory_options 'FollowSymLinks'
-      allow_override 'All'
-      priority 10
-      action :create
-    end
-
-    httpd_vhost 'secure.example.com' do
-      port 443
-      document_root '/var/www/secure.example.com'
-      ssl_enabled true
-      ssl_cert '/etc/ssl/certs/secure.example.com.crt'
-      ssl_key '/etc/ssl/private/secure.example.com.key'
-      priority 10
-      action :create
-    end
-
-    httpd_vhost 'disabled.com' do
-      port 80
-      document_root '/var/www/disabled.com'
-      priority 20
-      enabled false
-      action :create
-    end
-  EOH
-end

@@ -1,0 +1,126 @@
+{
+  "revision_id": "821ad2cf8382842b8ab5b1be5fe8b762497edc1a3aa0e67b4d4164f1b8a029a4",
+  "name": "httpd",
+  "run_list": [
+    "recipe[httpd::default]"
+  ],
+  "included_policy_locks": [
+
+  ],
+  "cookbook_locks": {
+    "apt": {
+      "version": "7.6.0",
+      "identifier": "279e645471c7071b35c8893a42778f103244141d",
+      "dotted_decimal_identifier": "11151677842376455.7658959783215735.157299725571101",
+      "cache_key": "apt-7.6.0-supermarket.chef.io",
+      "origin": "https://supermarket.chef.io:443/api/v1/cookbooks/apt/versions/7.6.0/download",
+      "source_options": {
+        "artifactserver": "https://supermarket.chef.io:443/api/v1/cookbooks/apt/versions/7.6.0/download",
+        "version": "7.6.0"
+      }
+    },
+    "httpd": {
+      "version": "1.0.0",
+      "identifier": "bd67aadd551a2c87188612ebeae2823819253d72",
+      "dotted_decimal_identifier": "53312754153757228.38026085978073826.143177451650418",
+      "source": ".",
+      "cache_key": null,
+      "scm_info": {
+        "scm": "git",
+        "remote": "https://github.com/thomasvincent/chef-httpd-cookbook.git",
+        "revision": "6dc751a2110d6adda6d3ada29c3c233321b69bd8",
+        "working_tree_clean": false,
+        "published": false,
+        "synchronized_remote_branches": [
+
+        ]
+      },
+      "source_options": {
+        "path": "."
+      }
+    },
+    "selinux": {
+      "version": "4.0.0",
+      "identifier": "21b2b10380cbff0fb95bceb4b243f6358c7eeb48",
+      "dotted_decimal_identifier": "9485147569179647.4425928611770947.270709850827592",
+      "cache_key": "selinux-4.0.0-supermarket.chef.io",
+      "origin": "https://supermarket.chef.io:443/api/v1/cookbooks/selinux/versions/4.0.0/download",
+      "source_options": {
+        "artifactserver": "https://supermarket.chef.io:443/api/v1/cookbooks/selinux/versions/4.0.0/download",
+        "version": "4.0.0"
+      }
+    },
+    "yum": {
+      "version": "7.4.20",
+      "identifier": "0f052a52f8638e555b823d21547d138924d66c26",
+      "dotted_decimal_identifier": "4227803989435278.24025987949876349.21479749479462",
+      "cache_key": "yum-7.4.20-supermarket.chef.io",
+      "origin": "https://supermarket.chef.io:443/api/v1/cookbooks/yum/versions/7.4.20/download",
+      "source_options": {
+        "artifactserver": "https://supermarket.chef.io:443/api/v1/cookbooks/yum/versions/7.4.20/download",
+        "version": "7.4.20"
+      }
+    },
+    "zypper": {
+      "version": "0.4.0",
+      "identifier": "28279427bc93cb2ad2e29f09545c7dc5aa17c6dc",
+      "dotted_decimal_identifier": "11302516343739339.12053819794478172.138287915714268",
+      "cache_key": "zypper-0.4.0-supermarket.chef.io",
+      "origin": "https://supermarket.chef.io:443/api/v1/cookbooks/zypper/versions/0.4.0/download",
+      "source_options": {
+        "artifactserver": "https://supermarket.chef.io:443/api/v1/cookbooks/zypper/versions/0.4.0/download",
+        "version": "0.4.0"
+      }
+    }
+  },
+  "default_attributes": {
+
+  },
+  "override_attributes": {
+
+  },
+  "solution_dependencies": {
+    "Policyfile": [
+      [
+        "apt",
+        "= 7.6.0"
+      ],
+      [
+        "httpd",
+        ">= 0.0.0"
+      ],
+      [
+        "selinux",
+        "= 4.0.0"
+      ],
+      [
+        "yum",
+        "= 7.4.20"
+      ],
+      [
+        "zypper",
+        "= 0.4.0"
+      ]
+    ],
+    "dependencies": {
+      "apt (7.6.0)": [
+
+      ],
+      "httpd (1.0.0)": [
+        [
+          "zypper",
+          "~> 0.4"
+        ]
+      ],
+      "selinux (4.0.0)": [
+
+      ],
+      "yum (7.4.20)": [
+
+      ],
+      "zypper (0.4.0)": [
+
+      ]
+    }
+  }
+}

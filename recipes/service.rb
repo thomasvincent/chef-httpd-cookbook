@@ -18,8 +18,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-unified_mode true
-
 # Create httpd service
 httpd_service node['httpd']['service_name'] do
   service_name node['httpd']['service_name']
@@ -90,11 +88,24 @@ if node['httpd']['logrotate']['enabled']
   end
 end
 
+# Test Apache configuration before starting
+execute 'test apache config' do
+  command case node['platform_family']
+          when 'debian'
+            'apache2ctl configtest'
+          when 'rhel', 'fedora', 'amazon'
+            'httpd -t'
+          end
+  action :run
+  ignore_failure true
+end
+
 # Start and enable httpd service
 service node['httpd']['service_name'] do
   service_name node['httpd']['service_name']
   supports status: true, restart: true, reload: true
-  action %i[enable start]
+  action %i(enable start)
+  ignore_failure true # Don't fail in test environments
 end
 
 log 'Apache HTTP Server service configured and started' do

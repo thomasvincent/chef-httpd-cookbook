@@ -26,8 +26,8 @@ describe Httpd::YAMLProcessor do
           'keep_alive_timeout' => 5,
           'keep_alive_requests' => 100,
           'user' => 'apache',
-          'group' => 'apache'
-        }
+          'group' => 'apache',
+        },
       }
 
       result = subject.yaml_to_apache_config(yaml_config)
@@ -47,8 +47,8 @@ describe Httpd::YAMLProcessor do
       yaml_config = {
         'listen' => [
           '*:80',
-          '*:443'
-        ]
+          '*:443',
+        ],
       }
 
       result = subject.yaml_to_apache_config(yaml_config)
@@ -59,11 +59,11 @@ describe Httpd::YAMLProcessor do
 
     it 'converts module configuration correctly' do
       yaml_config = {
-        'modules' => %w[
+        'modules' => %w(
           ssl
           rewrite
           proxy
-        ]
+        ),
       }
 
       result = subject.yaml_to_apache_config(yaml_config)
@@ -80,8 +80,8 @@ describe Httpd::YAMLProcessor do
           'server_limit' => 16,
           'max_request_workers' => 400,
           'threads_per_child' => 25,
-          'max_connections_per_child' => 0
-        }
+          'max_connections_per_child' => 0,
+        },
       }
 
       result = subject.yaml_to_apache_config(yaml_config)
@@ -102,9 +102,9 @@ describe Httpd::YAMLProcessor do
           'access_log' => '/var/log/httpd/access_log',
           'formats' => {
             'combined' => '%h %l %u %t \"%r\" %>s %b \"%<Referer>si\" \"%{User-Agent}i\"',
-            'common' => '%h %l %u %t \"%r\" %>s %b'
-          }
-        }
+            'common' => '%h %l %u %t \"%r\" %>s %b',
+          },
+        },
       }
 
       result = subject.yaml_to_apache_config(yaml_config)
@@ -123,15 +123,15 @@ describe Httpd::YAMLProcessor do
             'path' => '/var/www/html',
             'options' => 'FollowSymLinks',
             'allow_override' => 'None',
-            'require' => 'all granted'
+            'require' => 'all granted',
           },
           {
             'path' => '/var/www/restricted',
             'options' => 'None',
             'allow_override' => 'None',
-            'require' => 'all denied'
-          }
-        ]
+            'require' => 'all denied',
+          },
+        ],
       }
 
       result = subject.yaml_to_apache_config(yaml_config)
@@ -154,8 +154,8 @@ describe Httpd::YAMLProcessor do
         'security' => {
           'server_tokens' => 'Prod',
           'server_signature' => 'Off',
-          'trace_enable' => 'Off'
-        }
+          'trace_enable' => 'Off',
+        },
       }
 
       result = subject.yaml_to_apache_config(yaml_config)
@@ -168,8 +168,8 @@ describe Httpd::YAMLProcessor do
     it 'converts HTTP/2 configuration correctly' do
       yaml_config = {
         'http2' => {
-          'enabled' => true
-        }
+          'enabled' => true,
+        },
       }
 
       result = subject.yaml_to_apache_config(yaml_config)
@@ -192,9 +192,9 @@ describe Httpd::YAMLProcessor do
             'enabled' => true,
             'max_age' => 31_536_000,
             'include_subdomains' => true,
-            'preload' => true
-          }
-        }
+            'preload' => true,
+          },
+        },
       }
 
       result = subject.yaml_to_apache_config(yaml_config)
@@ -217,9 +217,9 @@ describe Httpd::YAMLProcessor do
           'MaxClients' => 150,
           '<Location "/server-status">' => {
             'SetHandler' => 'server-status',
-            'Require' => 'local'
-          }
-        }
+            'Require' => 'local',
+          },
+        },
       }
 
       result = subject.yaml_to_apache_config(yaml_config)

@@ -7,13 +7,13 @@ describe 'test::httpd_install' do
     'ubuntu' => {
       'versions' => ['20.04', '22.04'],
       'package_name' => 'apache2',
-      'service_name' => 'apache2'
+      'service_name' => 'apache2',
     },
     'centos' => {
-      'versions' => %w[8 9],
+      'versions' => %w(8 9),
       'package_name' => 'httpd',
-      'service_name' => 'httpd'
-    }
+      'service_name' => 'httpd',
+    },
   }
 
   before do
@@ -81,24 +81,3 @@ describe 'test::httpd_install' do
   end
 end
 
-# Create test cookbook for our custom resource tests
-file_cache_path = Chef::Config[:file_cache_path]
-
-cookbook_name = 'test'
-cookbook_path = "#{file_cache_path}/cookbooks/#{cookbook_name}"
-
-directory "#{cookbook_path}/recipes" do
-  recursive true
-end
-
-cookbook_file "#{cookbook_path}/metadata.rb" do
-  content "name '#{cookbook_name}'\nversion '0.1.0'"
-end
-
-cookbook_file "#{cookbook_path}/recipes/httpd_install.rb" do
-  content <<-EOH
-    httpd_install 'default' do
-      action :install
-    end
-  EOH
-end

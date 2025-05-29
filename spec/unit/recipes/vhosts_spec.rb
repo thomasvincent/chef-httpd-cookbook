@@ -7,13 +7,13 @@ describe 'httpd::vhosts' do
     'ubuntu' => {
       'versions' => ['20.04', '22.04'],
       'package_name' => 'apache2',
-      'service_name' => 'apache2'
+      'service_name' => 'apache2',
     },
     'centos' => {
-      'versions' => %w[8 9],
+      'versions' => %w(8 9),
       'package_name' => 'httpd',
-      'service_name' => 'httpd'
-    }
+      'service_name' => 'httpd',
+    },
   }
 
   platforms.each do |platform, platform_info|
@@ -61,14 +61,14 @@ describe 'httpd::vhosts' do
           runner.node.override['httpd']['vhosts']['example'] = {
             'domain' => 'example.com',
             'document_root' => '/var/www/example',
-            'aliases' => ['www.example.com']
+            'aliases' => ['www.example.com'],
           }
           runner.node.override['httpd']['vhosts']['secure'] = {
             'domain' => 'secure.example.com',
             'document_root' => '/var/www/secure',
             'ssl_enabled' => true,
             'ssl_cert' => '/etc/ssl/certs/ssl-cert-snakeoil.pem',
-            'ssl_key' => '/etc/ssl/private/ssl-cert-snakeoil.key'
+            'ssl_key' => '/etc/ssl/private/ssl-cert-snakeoil.key',
           }
           runner.converge(described_recipe)
         end

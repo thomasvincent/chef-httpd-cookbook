@@ -18,8 +18,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-unified_mode true
-
 # Include other recipes
 include_recipe 'httpd::install'
 include_recipe 'httpd::configure'

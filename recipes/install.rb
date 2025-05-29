@@ -18,8 +18,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-unified_mode true
-
 # Install Apache HTTP Server
 httpd_install 'default' do
   version node['httpd']['version']

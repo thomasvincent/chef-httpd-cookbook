@@ -45,7 +45,7 @@ module Httpd
         'platform' => node['platform'],
         'platform_version' => node['platform_version'],
         'apache_version' => apache_version,
-        'config_dir' => config_dir
+        'config_dir' => config_dir,
       }
 
       metadata_file = "#{backup_dir}/apache-config-#{timestamp}#{label_suffix}.json"

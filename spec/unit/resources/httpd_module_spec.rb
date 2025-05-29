@@ -9,13 +9,13 @@ describe 'test::httpd_module' do
       'mod_dir' => '/etc/apache2/mods-available',
       'mod_enabled_dir' => '/etc/apache2/mods-enabled',
       'a2enmod_cmd' => '/usr/sbin/a2enmod',
-      'a2dismod_cmd' => '/usr/sbin/a2dismod'
+      'a2dismod_cmd' => '/usr/sbin/a2dismod',
     },
     'centos' => {
-      'versions' => %w[8 9],
+      'versions' => %w(8 9),
       'mod_dir' => '/etc/httpd/conf.modules.d',
-      'libexec_dir' => '/usr/lib64/httpd/modules'
-    }
+      'libexec_dir' => '/usr/lib64/httpd/modules',
+    },
   }
 
   platforms.each do |platform, platform_info|
@@ -112,38 +112,3 @@ describe 'test::httpd_module' do
   end
 end
 
-# Create test cookbook for our custom resource tests
-file_cache_path = Chef::Config[:file_cache_path]
-
-cookbook_name = 'test'
-cookbook_path = "#{file_cache_path}/cookbooks/#{cookbook_name}"
-
-directory "#{cookbook_path}/recipes" do
-  recursive true
-end
-
-cookbook_file "#{cookbook_path}/metadata.rb" do
-  content "name '#{cookbook_name}'\nversion '0.1.0'"
-end
-
-cookbook_file "#{cookbook_path}/recipes/httpd_module.rb" do
-  content <<~EOH
-        httpd_module 'ssl' do
-          action :enable
-        end
-
-        httpd_module 'rewrite' do
-          action :disable
-        end
-
-        httpd_module 'status' do
-          configuration <<-EOC
-    <Location "/server-status">
-      SetHandler server-status
-      Require local
-    </Location>
-          EOC
-          action :enable
-        end
-  EOH
-end

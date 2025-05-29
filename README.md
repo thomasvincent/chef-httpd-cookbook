@@ -8,7 +8,7 @@ A modern, advanced Chef cookbook to install and configure Apache HTTP Server wit
 
 ## Ruby Environment Setup
 
-This project uses Ruby 3.3.0 and is configured to work with **rbenv** for Ruby version management.
+This project uses Ruby 3.2.0 and is configured to work with **rbenv** for Ruby version management.
 
 ### Prerequisites
 
@@ -31,7 +31,7 @@ Run the setup script:
 ```
 
 This will:
-- Install Ruby 3.3.0 via rbenv
+- Install Ruby 3.2.0 via rbenv
 - Set the local Ruby version
 - Install bundler
 - Install all gem dependencies
@@ -40,8 +40,8 @@ This will:
 
 If you prefer to set up manually:
 ```bash
-rbenv install 3.3.0
-rbenv local 3.3.0
+rbenv install 3.2.0
+rbenv local 3.2.0
 gem install bundler
 bundle install
 ```
