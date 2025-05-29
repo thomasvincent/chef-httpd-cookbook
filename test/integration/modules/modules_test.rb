@@ -6,7 +6,7 @@
 require_relative '../default/default_test'
 
 # Define modules to test
-modules_to_test = %w[proxy proxy_http rewrite proxy_balancer lbmethod_byrequests]
+modules_to_test = %w(proxy proxy_http rewrite proxy_balancer lbmethod_byrequests)
 
 # Check if the specified modules are enabled
 modules_to_test.each do |mod|

@@ -247,9 +247,9 @@ action_class do
         custom_log: new_resource.custom_log,
         log_format: new_resource.log_format,
         ssl_enabled: new_resource.ssl_enabled,
-        ssl_cert: new_resource.ssl_cert,
-        ssl_key: new_resource.ssl_key,
-        ssl_chain: new_resource.ssl_chain,
+        ssl_cert: new_resource.ssl_enabled ? new_resource.ssl_cert : nil,
+        ssl_key: new_resource.ssl_enabled ? new_resource.ssl_key : nil,
+        ssl_chain: new_resource.ssl_enabled ? new_resource.ssl_chain : nil,
         ssl_cipher_suite: new_resource.ssl_cipher_suite,
         ssl_protocol: new_resource.ssl_protocol,
         ssl_honor_cipher_order: new_resource.ssl_honor_cipher_order,
@@ -279,11 +279,12 @@ action_class do
 
   def enable_vhost
     if platform_family?('debian')
-      execute "a2ensite #{new_resource.priority}-#{new_resource.domain}.conf" do
-        command "a2ensite #{new_resource.priority}-#{new_resource.domain}.conf"
-        not_if { ::File.exist?(conf_enabled_path) }
-        action :run
+      # Create a symlink directly instead of using a2ensite which can be problematic in containers
+      link conf_enabled_path do
+        to conf_available_path
+        action :create
         notifies :restart, 'service[apache2]', :delayed
+        ignore_failure true
       end
     else
       link conf_enabled_path do
@@ -296,10 +297,10 @@ action_class do
 
   def disable_vhost
     if platform_family?('debian')
-      execute "a2dissite #{new_resource.priority}-#{new_resource.domain}.conf" do
-        command "a2dissite #{new_resource.priority}-#{new_resource.domain}.conf"
+      # Remove the symlink directly instead of using a2dissite
+      link conf_enabled_path do
+        action :delete
         only_if { ::File.exist?(conf_enabled_path) }
-        action :run
         notifies :restart, 'service[apache2]', :delayed
       end
     else

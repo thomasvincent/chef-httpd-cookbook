@@ -18,10 +18,10 @@ module Httpd
     # @param run_context [Chef::RunContext] The run context (optional)
     # @return [Chef::Resource] The resource
     def find_or_create_resource(resource_type, resource_name, run_context = nil)
-      run_context ||= self.run_context
+      context = run_context || self.run_context
 
       begin
-        resources(resource_type => resource_name)
+        context.resource_collection.find(resource_type => resource_name)
       rescue Chef::Exceptions::ResourceNotFound
         # Use declare_resource to create the resource
         declare_resource(resource_type, resource_name)

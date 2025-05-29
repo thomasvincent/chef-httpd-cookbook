@@ -18,8 +18,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-unified_mode true
-
 # Create the default virtual host if enabled
 if node['httpd']['default_vhost']['enabled']
   httpd_vhost 'default' do

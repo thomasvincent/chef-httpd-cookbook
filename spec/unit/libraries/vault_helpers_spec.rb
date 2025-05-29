@@ -17,7 +17,7 @@ describe Httpd::VaultHelpers do
     allow(Chef::EncryptedDataBagItem).to receive(:load).with('ssl_certificates', 'test_cert').and_return({
                                                                                                            'cert' => '-----BEGIN CERTIFICATE-----\nMIIDXTCCAkWgAwIBAgIJAJC1HiIAZAiIMA==\n-----END CERTIFICATE-----',
                                                                                                            'key' => '-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDHZB\n-----END PRIVATE KEY-----',
-                                                                                                           'chain' => '-----BEGIN CERTIFICATE-----\nMIIDXTCCAkWgAwIBBBBJAJC1HiIAZAiIMA==\n-----END CERTIFICATE-----'
+                                                                                                           'chain' => '-----BEGIN CERTIFICATE-----\nMIIDXTCCAkWgAwIBBBBJAJC1HiIAZAiIMA==\n-----END CERTIFICATE-----',
                                                                                                          })
 
     # Stub empty return for non-existent item

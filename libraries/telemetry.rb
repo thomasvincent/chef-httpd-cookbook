@@ -11,7 +11,7 @@ module Httpd
     def configure_prometheus_exporter(module_path = nil, scrape_uri = '/server-status?auto',
                                       telemetry_path = '/metrics', metrics = nil)
       # Default metrics to collect if none specified
-      metrics ||= %w[
+      metrics ||= %w(
         connections
         scoreboard
         cpu
@@ -19,7 +19,7 @@ module Httpd
         throughput
         response_time
         workers
-      ]
+      )
 
       # Check if mod_prometheus_exporter is available
       if apache_has_prometheus_module?
@@ -148,7 +148,7 @@ module Httpd
 
       # Enable and start service
       service 'apache-exporter' do
-        action %i[enable start]
+        action %i(enable start)
       end
 
       # Enable server-status for scraping
@@ -209,7 +209,7 @@ module Httpd
         'dashboard' => {
           'id' => nil,
           'title' => 'Apache HTTP Server Metrics',
-          'tags' => %w[apache httpd web],
+          'tags' => %w(apache httpd web),
           'timezone' => 'browser',
           'schemaVersion' => 16,
           'version' => 1,
@@ -224,9 +224,9 @@ module Httpd
                 {
                   'expr' => 'rate(apache_requests_total[5m])',
                   'refId' => 'A',
-                  'legendFormat' => 'Requests/s'
-                }
-              ]
+                  'legendFormat' => 'Requests/s',
+                },
+              ],
             },
             {
               'type' => 'graph',
@@ -237,14 +237,14 @@ module Httpd
                 {
                   'expr' => 'apache_workers{state="busy"}',
                   'refId' => 'A',
-                  'legendFormat' => 'Busy Workers'
+                  'legendFormat' => 'Busy Workers',
                 },
                 {
                   'expr' => 'apache_workers{state="idle"}',
                   'refId' => 'B',
-                  'legendFormat' => 'Idle Workers'
-                }
-              ]
+                  'legendFormat' => 'Idle Workers',
+                },
+              ],
             },
             {
               'type' => 'graph',
@@ -255,9 +255,9 @@ module Httpd
                 {
                   'expr' => 'rate(apache_cpu_seconds_total[5m])',
                   'refId' => 'A',
-                  'legendFormat' => 'CPU seconds/s'
-                }
-              ]
+                  'legendFormat' => 'CPU seconds/s',
+                },
+              ],
             },
             {
               'type' => 'graph',
@@ -268,26 +268,26 @@ module Httpd
                 {
                   'expr' => 'apache_scoreboard',
                   'refId' => 'A',
-                  'legendFormat' => '{{state}}'
-                }
-              ]
-            }
+                  'legendFormat' => '{{state}}',
+                },
+              ],
+            },
           ],
           'templating' => {
-            'list' => []
+            'list' => [],
           },
           'time' => {
             'from' => 'now-6h',
-            'to' => 'now'
+            'to' => 'now',
           },
           'timepicker' => {
-            'refresh_intervals' => %w[5s 10s 30s 1m 5m 15m 30m 1h 2h 1d]
-          }
+            'refresh_intervals' => %w(5s 10s 30s 1m 5m 15m 30m 1h 2h 1d),
+          },
         },
         'folderId' => 0,
         'folderUid' => '',
         'message' => 'Apache HTTP Server dashboard created by Chef',
-        'overwrite' => true
+        'overwrite' => true,
       }
 
       # Save dashboard JSON to file

@@ -45,4 +45,4 @@ namespace :integration do
 end
 
 # Default
-task default: %w[style spec]
+task default: %w(style spec)

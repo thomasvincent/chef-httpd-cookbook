@@ -38,8 +38,8 @@ describe file('/etc/apache2/sites-enabled/000-default.conf'), if: os.debian? do
 end
 
 # Check if basic modules are enabled
-%w[alias auth_basic authn_core authn_file authz_host authz_user autoindex deflate dir env filter mime reqtimeout
-   setenvif status].each do |mod|
+%w(alias auth_basic authn_core authn_file authz_host authz_user autoindex deflate dir env filter mime reqtimeout
+   setenvif status).each do |mod|
   describe file("/etc/httpd/conf.modules.d/#{mod}.load"), if: os.redhat? do
     it { should exist }
   end

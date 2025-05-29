@@ -299,8 +299,8 @@ action :disable do
   end
 end
 
-# Convenience method to enable and start the service
-action [:enable, :start] do
+# Define a custom action that enables and starts the service
+action :enable_and_start do
   action_enable
   action_start
 end

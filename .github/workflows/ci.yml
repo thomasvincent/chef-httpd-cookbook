@@ -32,14 +32,12 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: "3.3"
+          ruby-version: "3.2"
           bundler-cache: true
-      - name: Install Chef CLI
-        run: gem install chef-cli --version "~> 5.6"
       - name: Install dependencies
         run: bundle install
       - name: Check Ruby syntax
-        run: bundle exec chef exec ruby -c -w $(find . -name "*.rb" -not -path "./vendor/*")
+        run: bundle exec ruby -c -w $(find . -name "*.rb" -not -path "./vendor/*")
       - name: Check Chef syntax with Cookstyle
         run: bundle exec cookstyle
       - name: Run ChefSpec tests with coverage
@@ -83,10 +81,8 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: "3.3"
+          ruby-version: "3.2"
           bundler-cache: true
-      - name: Install Chef CLI
-        run: gem install chef-cli --version "~> 5.6"
       - name: Install dependencies
         run: bundle install
       - name: Set up Docker
@@ -125,10 +121,8 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: "3.3"
+          ruby-version: "3.2"
           bundler-cache: true
-      - name: Install Chef CLI
-        run: gem install chef-cli --version "~> 5.6"
       - name: Install dependencies
         run: bundle install
       - name: Set up Docker
@@ -167,10 +161,8 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: "3.3"
+          ruby-version: "3.2"
           bundler-cache: true
-      - name: Install Chef CLI
-        run: gem install chef-cli --version "~> 5.6"
       - name: Install dependencies
         run: bundle install
       - name: Set up Docker

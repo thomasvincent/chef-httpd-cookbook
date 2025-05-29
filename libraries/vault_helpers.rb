@@ -45,7 +45,7 @@ module Httpd
       {
         'certificate' => ssl_item['cert'],
         'key' => ssl_item['key'],
-        'chain' => ssl_item['chain']
+        'chain' => ssl_item['chain'],
       }
     end
 

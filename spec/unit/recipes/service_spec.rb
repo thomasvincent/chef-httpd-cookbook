@@ -7,13 +7,13 @@ describe 'httpd::service' do
     'ubuntu' => {
       'versions' => ['20.04', '22.04'],
       'package_name' => 'apache2',
-      'service_name' => 'apache2'
+      'service_name' => 'apache2',
     },
     'centos' => {
-      'versions' => %w[8 9],
+      'versions' => %w(8 9),
       'package_name' => 'httpd',
-      'service_name' => 'httpd'
-    }
+      'service_name' => 'httpd',
+    },
   }
 
   platforms.each do |platform, platform_info|

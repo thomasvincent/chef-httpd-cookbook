@@ -71,7 +71,7 @@ end
 default['httpd']['source']['url'] = "https://archive.apache.org/dist/httpd/httpd-#{node['httpd']['version']}.tar.gz"
 default['httpd']['source']['checksum'] = nil # Auto-generated
 default['httpd']['source']['prefix'] = '/usr/local/apache2'
-default['httpd']['source']['configure_options'] = %W[
+default['httpd']['source']['configure_options'] = %W(
   --prefix=#{node['httpd']['source']['prefix']}
   --enable-layout=Unix
   --enable-mods-shared=all
@@ -84,10 +84,10 @@ default['httpd']['source']['configure_options'] = %W[
   --enable-deflate
   --with-ssl=/usr
   --with-mpm=event
-]
+)
 default['httpd']['source']['dependencies'] = case node['platform_family']
                                              when 'rhel', 'fedora', 'amazon'
-                                               %w[
+                                               %w(
                                                  openssl-devel
                                                  pcre-devel
                                                  zlib-devel
@@ -100,9 +100,9 @@ default['httpd']['source']['dependencies'] = case node['platform_family']
                                                  libnghttp2-devel
                                                  apr-devel
                                                  apr-util-devel
-                                               ]
+                                               )
                                              when 'debian'
-                                               %w[
+                                               %w(
                                                  libssl-dev
                                                  libpcre3-dev
                                                  zlib1g-dev
@@ -114,7 +114,7 @@ default['httpd']['source']['dependencies'] = case node['platform_family']
                                                  libbrotli-dev
                                                  libapr1-dev
                                                  libaprutil1-dev
-                                               ]
+                                               )
                                              end
 
 # Multi-Processing Module configuration
@@ -172,7 +172,7 @@ default['httpd']['config']['log_level'] = 'warn'
 default['httpd']['config']['log_format'] = {
   'combined' => '%h %l %u %t \"%r\" %>s %b \"%<Referer>si\" \"%{User-Agent}i\"',
   'common' => '%h %l %u %t \"%r\" %>s %b',
-  'json' => '{"time":"%t","remoteIP":"%a","host":"%V","request":"%U","query":"%q","method":"%m","status":"%>s","userAgent":"%{User-agent}i","referer":"%<Referer>si","requestTime":"%D"}'
+  'json' => '{"time":"%t","remoteIP":"%a","host":"%V","request":"%U","query":"%q","method":"%m","status":"%>s","userAgent":"%{User-agent}i","referer":"%<Referer>si","requestTime":"%D"}',
 }
 default['httpd']['config']['enable_access_log'] = true
 default['httpd']['config']['rotate_logs'] = true
@@ -194,10 +194,10 @@ default['httpd']['security']['mime_sniffing_protection'] = true
 default['httpd']['security']['content_security_policy'] = "default-src 'self'; script-src 'self'"
 
 # SSL/TLS Configuration
-default['httpd']['ssl']['enabled'] = true
+default['httpd']['ssl']['enabled'] = false
 default['httpd']['ssl']['port'] = 443
 default['httpd']['ssl']['use_strong_ciphers'] = true
-default['httpd']['ssl']['protocol'] = %w[all -SSLv3 -TLSv1 -TLSv1.1]
+default['httpd']['ssl']['protocol'] = %w(all -SSLv3 -TLSv1 -TLSv1.1)
 default['httpd']['ssl']['cipher_suite'] =
   'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384'
 default['httpd']['ssl']['honor_cipher_order'] = 'on'
@@ -215,7 +215,7 @@ default['httpd']['ssl']['ocsp_stapling'] = true
 default['httpd']['ssl']['auto_redirect_http'] = true
 
 # Default modules to enable
-default['httpd']['modules'] = %w[
+default['httpd']['modules'] = %w(
   access_compat
   alias
   auth_basic
@@ -239,16 +239,15 @@ default['httpd']['modules'] = %w[
   socache_shmcb
   status
   ssl
-]
+)
 
 # Default modules to disable
-default['httpd']['disabled_modules'] = %w[
+default['httpd']['disabled_modules'] = %w(
   cgi
-  autoindex
-]
+)
 
 # Extra modules to install
-default['httpd']['extra_modules'] = %w[]
+default['httpd']['extra_modules'] = %w()
 
 # Default virtual hosts
 default['httpd']['default_vhost'] = {
@@ -261,7 +260,7 @@ default['httpd']['default_vhost'] = {
   'directory_index' => 'index.html',
   'error_log' => 'logs/error_log',
   'custom_log' => 'logs/access_log combined',
-  'enabled' => true
+  'enabled' => true,
 }
 
 # Define virtual hosts to create (empty by default)
@@ -273,8 +272,8 @@ default['httpd']['default_directories'] = [
     'path' => '/var/www/html',
     'options' => 'Indexes FollowSymLinks',
     'allow_override' => 'None',
-    'require' => 'all granted'
-  }
+    'require' => 'all granted',
+  },
 ]
 
 # OS-specific tuning
@@ -295,13 +294,13 @@ end
 # Firewall configuration
 default['httpd']['firewall']['enabled'] = true
 default['httpd']['firewall']['allow_ports'] = [80, 443]
-default['httpd']['firewall']['source_addresses'] = %w[0.0.0.0/0 ::/0]
+default['httpd']['firewall']['source_addresses'] = %w(0.0.0.0/0 ::/0)
 
 # Monitoring configuration
 default['httpd']['monitoring']['enabled'] = true
 default['httpd']['monitoring']['status_path'] = '/server-status'
 default['httpd']['monitoring']['restricted_access'] = true
-default['httpd']['monitoring']['allowed_ips'] = %w[127.0.0.1 ::1]
+default['httpd']['monitoring']['allowed_ips'] = %w(127.0.0.1 ::1)
 
 # Default sites data directory
 default['httpd']['sites_dir'] = '/var/www'
@@ -310,7 +309,7 @@ default['httpd']['sites_dir'] = '/var/www'
 default['httpd']['logrotate']['enabled'] = true
 default['httpd']['logrotate']['rotate'] = 52
 default['httpd']['logrotate']['frequency'] = 'weekly'
-default['httpd']['logrotate']['options'] = %w[missingok compress delaycompress notifempty create]
+default['httpd']['logrotate']['options'] = %w(missingok compress delaycompress notifempty create)
 default['httpd']['logrotate']['postrotate'] = case node['platform_family']
                                               when 'rhel', 'fedora', 'amazon'
                                                 '/bin/systemctl reload httpd.service > /dev/null 2>/dev/null || true'
@@ -328,7 +327,7 @@ default['httpd']['telemetry']['enabled'] = false
 default['httpd']['telemetry']['prometheus']['enabled'] = true
 default['httpd']['telemetry']['prometheus']['scrape_uri'] = '/server-status?auto'
 default['httpd']['telemetry']['prometheus']['telemetry_path'] = '/metrics'
-default['httpd']['telemetry']['prometheus']['metrics'] = %w[
+default['httpd']['telemetry']['prometheus']['metrics'] = %w(
   connections
   scoreboard
   cpu
@@ -336,8 +335,8 @@ default['httpd']['telemetry']['prometheus']['metrics'] = %w[
   throughput
   response_time
   workers
-]
-default['httpd']['telemetry']['prometheus']['allow_ips'] = %w[127.0.0.1 ::1]
+)
+default['httpd']['telemetry']['prometheus']['allow_ips'] = %w(127.0.0.1 ::1)
 default['httpd']['telemetry']['grafana']['enabled'] = false
 default['httpd']['telemetry']['grafana']['url'] = 'http://localhost:3000'
 default['httpd']['telemetry']['grafana']['datasource'] = 'Prometheus'

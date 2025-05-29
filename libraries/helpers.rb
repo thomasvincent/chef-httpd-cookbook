@@ -10,7 +10,9 @@ module Httpd
     # Get system memory in MB with better error handling
     def system_memory_mb
       if node['memory'] && node['memory']['total']
-        node['memory']['total'].to_i / 1024
+        # Handle memory value that might have 'kB' suffix
+        total_kb = node['memory']['total'].to_s.gsub(/[^0-9]/, '').to_i
+        total_kb / 1024
       else
         Chef::Log.warn('Could not determine system memory, using default value')
         2048 # Default to 2GB if memory info not available
@@ -89,17 +91,16 @@ module Httpd
 
     # Create module configuration filename based on platform
     def module_config_name(module_name)
-      case node['platform_family']
-      when 'rhel', 'fedora', 'amazon'
+      if platform_family?('rhel', 'fedora', 'amazon')
         # RHEL/CentOS/Fedora use 00-NAME.conf in modules.d
         "00-#{module_name}.conf"
-      when 'debian'
+      elsif platform_family?('debian')
         # Debian/Ubuntu use NAME.conf in mods-available
         "#{module_name}.conf"
-      when 'suse'
+      elsif platform_family?('suse')
         # SUSE uses NAME.conf in conf.d
         "#{module_name}.conf"
-      when 'arch'
+      elsif platform_family?('arch')
         # Arch uses NAME.conf in conf.d
         "#{module_name}.conf"
       else
@@ -113,7 +114,7 @@ module Httpd
         major: node['httpd']['version'].split('.').first,
         minor: node['httpd']['version'].split('.')[1],
         patch: node['httpd']['version'].split('.')[2],
-        full: node['httpd']['version']
+        full: node['httpd']['version'],
       }
     rescue StandardError => e
       Chef::Log.warn("Error determining Apache version: #{e.message}. Using default values.")
@@ -149,14 +150,13 @@ module Httpd
 
     # Get default configuration file path for Apache
     def default_config_path
-      case node['platform_family']
-      when 'debian'
+      if platform_family?('debian')
         '/etc/apache2/apache2.conf'
-      when 'rhel', 'fedora', 'amazon'
+      elsif platform_family?('rhel', 'fedora', 'amazon')
         '/etc/httpd/conf/httpd.conf'
-      when 'suse'
+      elsif platform_family?('suse')
         '/etc/apache2/httpd.conf'
-      when 'arch'
+      elsif platform_family?('arch')
         '/etc/httpd/conf/httpd.conf'
       else
         '/etc/httpd/conf/httpd.conf'
@@ -171,8 +171,8 @@ module Httpd
       # First check if SELinux is actually enabled
       selinux_enabled = begin
         shell_out!('getenforce').stdout.strip != 'Disabled'
-      rescue StandardError
-        false
+                        rescue StandardError
+                          false
       end
       return unless selinux_enabled
 
@@ -199,14 +199,13 @@ module Httpd
 
     # Get correct service name for platform
     def httpd_service_name
-      case node['platform_family']
-      when 'debian'
+      if platform_family?('debian')
         'apache2'
-      when 'rhel', 'fedora', 'amazon'
+      elsif platform_family?('rhel', 'fedora', 'amazon')
         'httpd'
-      when 'suse'
+      elsif platform_family?('suse')
         'apache2'
-      when 'arch'
+      elsif platform_family?('arch')
         'httpd'
       else
         'httpd'

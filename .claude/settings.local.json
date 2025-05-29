@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bundle exec:*)",
+      "Bash(cookstyle:*)",
+      "Bash(mkdir:*)",
+      "Bash(code .)",
+      "Bash(git add:*)",
+      "Bash(git reset:*)",
+      "Bash(git commit:*)",
+      "Bash(ls:*)",
+      "Bash(ruby --version)",
+      "Bash(chmod:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(docker exec:*)",
+      "Bash(kitchen test:*)",
+      "Bash(grep:*)",
+      "Bash(kitchen login default-ubuntu-2204:*)",
+      "Bash(chef-cli update:*)",
+      "Bash(kitchen converge:*)",
+      "Bash(kitchen list:*)",
+      "Bash(kitchen destroy:*)",
+      "Bash(gh workflow view:*)",
+      "Bash(gh run view:*)",
+      "Bash(bundle install)",
+      "Bash(asdf local:*)",
+      "Bash(asdf set:*)",
+      "Bash(asdf list:*)",
+      "Bash(asdf install:*)",
+      "Bash(bundle update:*)",
+      "Bash(gem search:*)",
+      "Bash(rm:*)",
+      "Bash(cat:*)",
+      "Bash(timeout 30 bundle exec rspec spec/unit/libraries/helpers_spec.rb --format progress 2 >& 1)"
+    ],
+    "deny": []
+  }
+}

@@ -2,17 +2,17 @@
 
 source 'https://rubygems.org'
 
-# Specify Ruby version for consistency
-ruby '3.3.0'
+# Specify Ruby version for consistency (allow 3.1.x or higher)
+ruby '>= 3.1.0'
 
 group :development do
   gem 'ruby-lsp', '~> 0.14.0'
   gem 'debug', '~> 1.9'
   gem 'chef', '~> 18.0'
   gem 'chef-cli', '~> 5.6'
-  gem 'chefspec', '~> 9.3'
+  gem 'chefspec', '~> 9.3', '>= 9.3.3'
   gem 'cookstyle', '~> 7.32'
-  gem 'rspec', '~> 3.11'
+  gem 'rspec', '~> 3.11.0'
 end
 
 group :test do

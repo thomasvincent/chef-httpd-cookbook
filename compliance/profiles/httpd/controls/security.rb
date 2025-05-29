@@ -43,12 +43,12 @@ control 'httpd-security-4' do
   title 'Apache should have all required modules'
   desc 'All required security and functionality modules should be enabled'
 
-  required_modules = %w[
+  required_modules = %w(
     log_config
     logio
     headers
     ssl
-  ]
+  )
 
   required_modules.each do |mod|
     describe apache_conf do

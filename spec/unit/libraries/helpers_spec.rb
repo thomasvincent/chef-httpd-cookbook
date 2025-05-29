@@ -6,8 +6,8 @@ require_relative '../../../libraries/helpers'
 describe Httpd::Helpers do
   let(:chef_run) do
     ChefSpec::SoloRunner.new(platform: 'ubuntu', version: '20.04') do |node|
-      node.default['memory']['total'] = '4096000kB'
-      node.default['cpu']['total'] = 4
+      node.automatic['memory']['total'] = '4096000kB'
+      node.automatic['cpu']['total'] = 4
       node.default['httpd']['version'] = '2.4.57'
     end
   end
@@ -16,9 +16,9 @@ describe Httpd::Helpers do
 
   before do
     allow(subject).to receive(:node).and_return(chef_run.node)
-    allow(subject).to receive(:platform_family?).and_return(false)
-    allow(subject).to receive(:platform_family?).with('debian').and_return(chef_run.node['platform_family'] == 'debian')
-    allow(subject).to receive(:platform_family?).with('rhel').and_return(chef_run.node['platform_family'] == 'rhel')
+    allow(subject).to receive(:platform_family?) do |*families|
+      families.any? { |family| chef_run.node['platform_family'] == family }
+    end
     allow(subject).to receive(:platform?).and_return(false)
     allow(subject).to receive(:shell_out!).and_return(double('shellout', stdout: "Enforcing\n"))
   end
@@ -61,12 +61,12 @@ describe Httpd::Helpers do
 
     it 'calculates correct value for systems with 1GB RAM' do
       allow(subject).to receive(:system_memory_mb).and_return(1000)
-      expect(subject.calculate_max_request_workers).to eq(66)
+      expect(subject.calculate_max_request_workers).to eq(100)  # [15, (1000 / 10)].max = 100
     end
 
     it 'calculates correct value for systems with 16GB RAM' do
       allow(subject).to receive(:system_memory_mb).and_return(16_000)
-      expect(subject.calculate_max_request_workers).to eq(400)
+      expect(subject.calculate_max_request_workers).to eq(800)  # [100, (16000 / 20)].max = 800
     end
 
     it 'handles errors gracefully' do
@@ -134,7 +134,8 @@ describe Httpd::Helpers do
 
   describe '#module_config_name' do
     it 'returns correct value for rhel family' do
-      allow(subject).to receive(:platform_family?).with('rhel').and_return(true)
+      allow(subject).to receive(:platform_family?).and_return(false)
+      allow(subject).to receive(:platform_family?).with('rhel', 'fedora', 'amazon').and_return(true)
       expect(subject.module_config_name('ssl')).to eq('00-ssl.conf')
     end
 
@@ -174,7 +175,7 @@ describe Httpd::Helpers do
                                                                          major: '2',
                                                                          minor: '4',
                                                                          patch: '57',
-                                                                         full: '2.4.57'
+                                                                         full: '2.4.57',
                                                                        })
       expect(subject.apache_24?).to be true
     end
@@ -184,7 +185,7 @@ describe Httpd::Helpers do
                                                                          major: '2',
                                                                          minor: '2',
                                                                          patch: '34',
-                                                                         full: '2.2.34'
+                                                                         full: '2.2.34',
                                                                        })
       expect(subject.apache_24?).to be false
     end
@@ -194,7 +195,7 @@ describe Httpd::Helpers do
                                                                          major: '3',
                                                                          minor: '0',
                                                                          patch: '0',
-                                                                         full: '3.0.0'
+                                                                         full: '3.0.0',
                                                                        })
       expect(subject.apache_24?).to be true
     end
@@ -253,8 +254,9 @@ describe Httpd::Helpers do
     end
 
     it 'returns correct path for rhel' do
+      allow(subject).to receive(:platform_family?).and_return(false)
       allow(subject).to receive(:platform_family?).with('debian').and_return(false)
-      allow(subject).to receive(:platform_family?).with('rhel').and_return(true)
+      allow(subject).to receive(:platform_family?).with('rhel', 'fedora', 'amazon').and_return(true)
       expect(subject.default_config_path).to eq('/etc/httpd/conf/httpd.conf')
     end
   end
@@ -266,8 +268,9 @@ describe Httpd::Helpers do
     end
 
     it 'returns httpd for rhel' do
+      allow(subject).to receive(:platform_family?).and_return(false)
       allow(subject).to receive(:platform_family?).with('debian').and_return(false)
-      allow(subject).to receive(:platform_family?).with('rhel').and_return(true)
+      allow(subject).to receive(:platform_family?).with('rhel', 'fedora', 'amazon').and_return(true)
       expect(subject.httpd_service_name).to eq('httpd')
     end
   end

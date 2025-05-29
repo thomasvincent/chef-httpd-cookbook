@@ -31,18 +31,16 @@ RSpec.configure do |config|
   # Use the specified formatter
   config.formatter = :documentation # :progress, :html, :json, :junit, :progress, :documentation
 
-  # Run all examples within a transaction
-  config.around(:each) do |example|
-    # Only use a transaction if we have a database
-    Chefspec::SoloRunner.cleanup_after_run!
-    example.run
+  # Include ChefSpec::API in the RSpec context
+  config.include ChefSpec::API
+  
+  # Run cleanup after each example
+  config.after(:each) do
+    ChefSpec::Coverage.report! if defined?(ChefSpec::Coverage)
   end
 end
 
-# Mock the Chef::Platform method default_provider to use httpd_service, httpd_config, httpd_module, etc.
-# This is needed for proper resource collection testing with ChefSpec
-include ChefSpec::API
-
+# Helper method for stubbing resources
 def stub_resources
   allow_any_instance_of(Chef::ResourceCollection).to receive(:find).and_call_original
   allow_any_instance_of(Chef::ResourceCollection).to receive(:find).with('template[/etc/httpd/conf/httpd.conf]').and_return(
