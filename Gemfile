@@ -16,7 +16,7 @@ group :development do
 end
 
 group :test do
-  gem 'inspec-bin', '~> 5.22'
+  gem 'inspec-bin', '~> 6.8'
   gem 'kitchen-docker', '~> 3.0'
   gem 'kitchen-inspec', '~> 2.6'
   gem 'rspec-its', '~> 1.3'
