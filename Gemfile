@@ -8,7 +8,7 @@ ruby '>= 3.1.0'
 group :development do
   gem 'ruby-lsp', '~> 0.23.23'
   gem 'debug', '~> 1.9'
-  gem 'chef', '~> 19.0'
+  gem 'chef', '~> 18.7'
   gem 'chef-cli', '~> 5.6'
   gem 'chefspec', '~> 9.3', '>= 9.3.3'
   gem 'cookstyle', '~> 8.1'
@@ -16,7 +16,7 @@ group :development do
 end
 
 group :test do
-  gem 'inspec-bin', '>= 7.0'
+  gem 'inspec-bin', '>= 5.22'
   gem 'kitchen-docker', '~> 3.0'
   gem 'kitchen-inspec', '~> 3.0'
   gem 'rspec-its', '~> 1.3'
