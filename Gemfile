@@ -12,7 +12,7 @@ group :development do
   gem 'chef-cli', '~> 5.6'
   gem 'chefspec', '~> 9.3', '>= 9.3.3'
   gem 'cookstyle', '~> 7.32'
-  gem 'rspec', '~> 3.11.0'
+  gem 'rspec', '~> 3.13.1'
 end
 
 group :test do
