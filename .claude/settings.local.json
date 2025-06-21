@@ -35,7 +35,9 @@
       "Bash(chef exec:*)",
       "Bash(touch:*)",
       "Bash(docker:*)",
-      "Bash(/dev/null)"
+      "Bash(/dev/null)",
+      "Bash(git push:*)",
+      "Bash(gh run list:*)"
     ],
     "deny": []
   },

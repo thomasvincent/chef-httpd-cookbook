@@ -80,4 +80,3 @@ describe 'test::httpd_install' do
     end
   end
 end
-

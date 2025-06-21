@@ -33,7 +33,7 @@ RSpec.configure do |config|
 
   # Include ChefSpec::API in the RSpec context
   config.include ChefSpec::API
-  
+
   # Run cleanup after each example
   config.after(:each) do
     ChefSpec::Coverage.report! if defined?(ChefSpec::Coverage)

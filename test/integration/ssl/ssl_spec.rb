@@ -6,59 +6,59 @@
 title 'Apache SSL/TLS Configuration Tests'
 
 # Core Apache installation
-describe service('apache2'), :if => os.debian? || os.ubuntu? do
+describe service('apache2'), if: os.debian? || os.ubuntu? do
   it { should be_installed }
   it { should be_enabled }
   it { should be_running }
 end
 
-describe service('httpd'), :if => os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
+describe service('httpd'), if: os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
   it { should be_installed }
   it { should be_enabled }
   it { should be_running }
 end
 
 # Test SSL module enabled
-describe apache_conf('/etc/apache2/mods-enabled/ssl.load'), :if => os.debian? || os.ubuntu? do
+describe apache_conf('/etc/apache2/mods-enabled/ssl.load'), if: os.debian? || os.ubuntu? do
   it { should exist }
   it { should be_symlink }
 end
 
-describe file('/etc/httpd/conf.modules.d/00-ssl.conf'), :if => os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
+describe file('/etc/httpd/conf.modules.d/00-ssl.conf'), if: os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
   it { should exist }
   its('content') { should match(/LoadModule ssl_module/) }
 end
 
 # Verify certificate configuration
-describe file('/etc/pki/tls/certs/localhost.crt'), :if => os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
+describe file('/etc/pki/tls/certs/localhost.crt'), if: os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
   it { should exist }
   its('mode') { should cmp '0644' }
 end
 
-describe file('/etc/ssl/certs/localhost.crt'), :if => os.debian? || os.ubuntu? do
+describe file('/etc/ssl/certs/localhost.crt'), if: os.debian? || os.ubuntu? do
   it { should exist }
   its('mode') { should cmp '0644' }
 end
 
-describe file('/etc/pki/tls/private/localhost.key'), :if => os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
+describe file('/etc/pki/tls/private/localhost.key'), if: os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
   it { should exist }
   its('mode') { should cmp '0600' }
 end
 
-describe file('/etc/ssl/private/localhost.key'), :if => os.debian? || os.ubuntu? do
+describe file('/etc/ssl/private/localhost.key'), if: os.debian? || os.ubuntu? do
   it { should exist }
   its('mode') { should cmp '0600' }
 end
 
 # Check SSL configuration
-describe apache_conf('/etc/apache2/mods-enabled/ssl.conf'), :if => os.debian? || os.ubuntu? do
+describe apache_conf('/etc/apache2/mods-enabled/ssl.conf'), if: os.debian? || os.ubuntu? do
   its('content') { should match(/SSLEngine on/) }
   its('content') { should match(/SSLProtocol/) }
   its('content') { should match(/SSLCipherSuite/) }
   its('content') { should match(/SSLHonorCipherOrder on/) }
 end
 
-describe file('/etc/httpd/conf.d/ssl.conf'), :if => os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
+describe file('/etc/httpd/conf.d/ssl.conf'), if: os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
   its('content') { should match(/SSLEngine on/) }
   its('content') { should match(/SSLProtocol/) }
   its('content') { should match(/SSLCipherSuite/) }
@@ -138,35 +138,35 @@ describe http('http://localhost/') do
 end
 
 # Verify SSL session handling
-describe apache_conf('/etc/apache2/mods-enabled/ssl.conf'), :if => os.debian? || os.ubuntu? do
+describe apache_conf('/etc/apache2/mods-enabled/ssl.conf'), if: os.debian? || os.ubuntu? do
   its('content') { should match(/SSLSessionCache/) }
   its('content') { should match(/SSLSessionTickets/) }
   its('content') { should match(/SSLSessionTimeout/) }
 end
 
-describe file('/etc/httpd/conf.d/ssl.conf'), :if => os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
+describe file('/etc/httpd/conf.d/ssl.conf'), if: os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
   its('content') { should match(/SSLSessionCache/) }
   its('content') { should match(/SSLSessionTickets/) }
   its('content') { should match(/SSLSessionTimeout/) }
 end
 
 # Test OCSP stapling
-describe apache_conf('/etc/apache2/mods-enabled/ssl.conf'), :if => os.debian? || os.ubuntu? do
+describe apache_conf('/etc/apache2/mods-enabled/ssl.conf'), if: os.debian? || os.ubuntu? do
   its('content') { should match(/SSLUseStapling/) }
   its('content') { should match(/SSLStaplingCache/) }
 end
 
-describe file('/etc/httpd/conf.d/ssl.conf'), :if => os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
+describe file('/etc/httpd/conf.d/ssl.conf'), if: os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
   its('content') { should match(/SSLUseStapling/) }
   its('content') { should match(/SSLStaplingCache/) }
 end
 
 # Verify HTTP/2 support with SSL
-describe apache_conf('/etc/apache2/mods-enabled/http2.load'), :if => os.debian? || os.ubuntu? do
+describe apache_conf('/etc/apache2/mods-enabled/http2.load'), if: os.debian? || os.ubuntu? do
   it { should exist }
 end
 
-describe file('/etc/httpd/conf.modules.d/00-http2.conf'), :if => os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
+describe file('/etc/httpd/conf.modules.d/00-http2.conf'), if: os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
   it { should exist }
   its('content') { should match(/LoadModule http2_module/) }
 end
@@ -174,7 +174,7 @@ end
 # Test for secure SSL/TLS configuration using external tools
 describe command('curl -s -I --tlsv1.3 https://localhost/ -k') do
   its('exit_status') { should eq 0 }
-  its('stdout') { should match(/HTTP\/[1-2]/) }
+  its('stdout') { should match(%r{HTTP/[1-2]}) }
 end
 
 # Verify port 443 is listening
@@ -184,13 +184,12 @@ describe port(443) do
 end
 
 # Test SSL configuration syntax
-describe command('apache2ctl -t'), :if => os.debian? || os.ubuntu? do
+describe command('apache2ctl -t'), if: os.debian? || os.ubuntu? do
   its('exit_status') { should eq 0 }
   its('stdout') { should match(/Syntax OK/) }
 end
 
-describe command('httpd -t'), :if => os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
+describe command('httpd -t'), if: os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
   its('exit_status') { should eq 0 }
   its('stdout') { should match(/Syntax OK/) }
 end
-

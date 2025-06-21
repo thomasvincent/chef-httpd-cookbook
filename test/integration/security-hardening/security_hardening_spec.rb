@@ -6,40 +6,40 @@
 title 'Security Hardening Tests'
 
 # Core Apache installation
-describe service('apache2'), :if => os.debian? || os.ubuntu? do
+describe service('apache2'), if: os.debian? || os.ubuntu? do
   it { should be_installed }
   it { should be_enabled }
   it { should be_running }
 end
 
-describe service('httpd'), :if => os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
+describe service('httpd'), if: os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
   it { should be_installed }
   it { should be_enabled }
   it { should be_running }
 end
 
 # Basic security configuration
-describe apache_conf, :if => os.debian? || os.ubuntu? do
+describe apache_conf, if: os.debian? || os.ubuntu? do
   its('ServerTokens') { should eq 'Prod' }
   its('ServerSignature') { should eq 'Off' }
   its('TraceEnable') { should eq 'Off' }
 end
 
-describe apache_conf, :if => os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
+describe apache_conf, if: os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
   its('ServerTokens') { should eq 'Prod' }
   its('ServerSignature') { should eq 'Off' }
   its('TraceEnable') { should eq 'Off' }
 end
 
 # File permissions for critical files
-describe file('/etc/apache2/apache2.conf'), :if => os.debian? || os.ubuntu? do
+describe file('/etc/apache2/apache2.conf'), if: os.debian? || os.ubuntu? do
   it { should exist }
   its('mode') { should cmp '0640' }
   its('owner') { should eq 'root' }
   its('group') { should eq 'root' }
 end
 
-describe file('/etc/httpd/conf/httpd.conf'), :if => os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
+describe file('/etc/httpd/conf/httpd.conf'), if: os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
   it { should exist }
   its('mode') { should cmp '0640' }
   its('owner') { should eq 'root' }
@@ -47,20 +47,20 @@ describe file('/etc/httpd/conf/httpd.conf'), :if => os.redhat? || os.name == 'am
 end
 
 # SSL certificate permissions
-describe file('/etc/pki/tls/private/localhost.key'), :if => os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
+describe file('/etc/pki/tls/private/localhost.key'), if: os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
   it { should exist }
   its('mode') { should cmp '0600' }
   its('owner') { should eq 'root' }
 end
 
-describe file('/etc/ssl/private/localhost.key'), :if => os.debian? || os.ubuntu? do
+describe file('/etc/ssl/private/localhost.key'), if: os.debian? || os.ubuntu? do
   it { should exist }
   its('mode') { should cmp '0600' }
   its('owner') { should eq 'root' }
 end
 
 # Security module enablement
-describe apache_conf('/etc/apache2/mods-enabled/headers.conf'), :if => os.debian? || os.ubuntu? do
+describe apache_conf('/etc/apache2/mods-enabled/headers.conf'), if: os.debian? || os.ubuntu? do
   it { should exist }
 end
 
@@ -127,37 +127,36 @@ describe ssl(port: 443).ciphers('TLS_AES_256_GCM_SHA384') do
 end
 
 # ModSecurity / WAF (if applicable)
-describe file('/etc/apache2/mods-available/security2.conf'), :if => os.debian? || os.ubuntu? do
+describe file('/etc/apache2/mods-available/security2.conf'), if: os.debian? || os.ubuntu? do
   it { should exist }
 end
 
-describe file('/etc/httpd/conf.d/mod_security.conf'), :if => os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
+describe file('/etc/httpd/conf.d/mod_security.conf'), if: os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
   it { should exist }
 end
 
 # Automated scanner detection / IP blacklisting
-describe file('/etc/apache2/conf-enabled/security.conf'), :if => os.debian? || os.ubuntu? do
+describe file('/etc/apache2/conf-enabled/security.conf'), if: os.debian? || os.ubuntu? do
   its('content') { should match /LimitRequestFields/ }
   its('content') { should match /LimitRequestFieldSize/ }
   its('content') { should match /LimitRequestBody/ }
 end
 
-describe file('/etc/httpd/conf.d/security.conf'), :if => os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
+describe file('/etc/httpd/conf.d/security.conf'), if: os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
   its('content') { should match /LimitRequestFields/ }
   its('content') { should match /LimitRequestFieldSize/ }
   its('content') { should match /LimitRequestBody/ }
 end
 
 # Directory access controls
-describe apache_conf('/etc/apache2/conf-enabled/security.conf'), :if => os.debian? || os.ubuntu? do
+describe apache_conf('/etc/apache2/conf-enabled/security.conf'), if: os.debian? || os.ubuntu? do
   its('params') { should include('<Directory />' => 'Options None') }
   its('params') { should include('<Directory />' => 'AllowOverride None') }
   its('params') { should include('<Directory />' => 'Require all denied') }
 end
 
-describe apache_conf('/etc/httpd/conf.d/security.conf'), :if => os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
+describe apache_conf('/etc/httpd/conf.d/security.conf'), if: os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
   its('params') { should include('<Directory />' => 'Options None') }
   its('params') { should include('<Directory />' => 'AllowOverride None') }
   its('params') { should include('<Directory />' => 'Require all denied') }
 end
-

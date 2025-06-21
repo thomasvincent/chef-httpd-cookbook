@@ -7,20 +7,20 @@
 title 'Performance Tuning Tests'
 
 # Core Apache installation
-describe service('apache2'), :if => os.debian? || os.ubuntu? do
+describe service('apache2'), if: os.debian? || os.ubuntu? do
   it { should be_installed }
   it { should be_enabled }
   it { should be_running }
 end
 
-describe service('httpd'), :if => os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
+describe service('httpd'), if: os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
   it { should be_installed }
   it { should be_enabled }
   it { should be_running }
 end
 
 # MPM Module Configuration (event MPM)
-describe apache_conf('/etc/apache2/mods-enabled/mpm_event.conf'), :if => os.debian? || os.ubuntu? do
+describe apache_conf('/etc/apache2/mods-enabled/mpm_event.conf'), if: os.debian? || os.ubuntu? do
   it { should exist }
   its('content') { should match /StartServers\s+[0-9]+/ }
   its('content') { should match /MinSpareThreads\s+[0-9]+/ }
@@ -32,11 +32,11 @@ describe apache_conf('/etc/apache2/mods-enabled/mpm_event.conf'), :if => os.debi
   its('content') { should match /ServerLimit\s+16/ }
 end
 
-describe apache_conf('/etc/httpd/conf.modules.d/00-mpm.conf'), :if => os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
+describe apache_conf('/etc/httpd/conf.modules.d/00-mpm.conf'), if: os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
   its('content') { should match /LoadModule mpm_event_module/ }
 end
 
-describe apache_conf('/etc/httpd/conf/httpd.conf'), :if => os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
+describe apache_conf('/etc/httpd/conf/httpd.conf'), if: os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
   its('content') { should match /StartServers\s+[0-9]+/ }
   its('content') { should match /MinSpareThreads\s+[0-9]+/ }
   its('content') { should match /MaxSpareThreads\s+[0-9]+/ }
@@ -48,28 +48,28 @@ describe apache_conf('/etc/httpd/conf/httpd.conf'), :if => os.redhat? || os.name
 end
 
 # Check that event MPM is enabled, not prefork or worker
-describe file('/etc/apache2/mods-enabled/mpm_event.load'), :if => os.debian? || os.ubuntu? do
+describe file('/etc/apache2/mods-enabled/mpm_event.load'), if: os.debian? || os.ubuntu? do
   it { should exist }
   it { should be_symlink }
 end
 
-describe file('/etc/apache2/mods-enabled/mpm_prefork.load'), :if => os.debian? || os.ubuntu? do
+describe file('/etc/apache2/mods-enabled/mpm_prefork.load'), if: os.debian? || os.ubuntu? do
   it { should_not exist }
 end
 
-describe file('/etc/apache2/mods-enabled/mpm_worker.load'), :if => os.debian? || os.ubuntu? do
+describe file('/etc/apache2/mods-enabled/mpm_worker.load'), if: os.debian? || os.ubuntu? do
   it { should_not exist }
 end
 
 # Performance optimizations
-describe apache_conf('/etc/apache2/apache2.conf'), :if => os.debian? || os.ubuntu? do
+describe apache_conf('/etc/apache2/apache2.conf'), if: os.debian? || os.ubuntu? do
   its('Timeout') { should cmp <= 60 }
   its('KeepAlive') { should eq 'On' }
   its('MaxKeepAliveRequests') { should cmp >= 100 }
   its('KeepAliveTimeout') { should cmp <= 5 }
 end
 
-describe apache_conf('/etc/httpd/conf/httpd.conf'), :if => os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
+describe apache_conf('/etc/httpd/conf/httpd.conf'), if: os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
   its('Timeout') { should cmp <= 60 }
   its('KeepAlive') { should eq 'On' }
   its('MaxKeepAliveRequests') { should cmp >= 100 }
@@ -77,21 +77,21 @@ describe apache_conf('/etc/httpd/conf/httpd.conf'), :if => os.redhat? || os.name
 end
 
 # Check running Apache processes
-describe command('ps -ef | grep apache2 | grep -v grep | wc -l'), :if => os.debian? || os.ubuntu? do
+describe command('ps -ef | grep apache2 | grep -v grep | wc -l'), if: os.debian? || os.ubuntu? do
   its('stdout.to_i') { should be >= 3 }  # At least a few Apache processes should be running
 end
 
-describe command('ps -ef | grep httpd | grep -v grep | wc -l'), :if => os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
+describe command('ps -ef | grep httpd | grep -v grep | wc -l'), if: os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
   its('stdout.to_i') { should be >= 3 }  # At least a few Apache processes should be running
 end
 
 # Check memory utilization of Apache processes
-describe command('ps -o rss= -C apache2 | awk \'{sum+=$1} END {print sum/1024 " MB"}\''), :if => os.debian? || os.ubuntu? do
+describe command('ps -o rss= -C apache2 | awk \'{sum+=$1} END {print sum/1024 " MB"}\''), if: os.debian? || os.ubuntu? do
   its('stdout') { should_not be_empty }
   # We can't make specific assertions about memory usage as it depends on the system
 end
 
-describe command('ps -o rss= -C httpd | awk \'{sum+=$1} END {print sum/1024 " MB"}\''), :if => os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
+describe command('ps -o rss= -C httpd | awk \'{sum+=$1} END {print sum/1024 " MB"}\''), if: os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
   its('stdout') { should_not be_empty }
   # We can't make specific assertions about memory usage as it depends on the system
 end
@@ -102,25 +102,25 @@ describe command('curl -s http://localhost/server-status?auto') do
 end
 
 # Performance-related modules
-describe apache_conf('/etc/apache2/mods-enabled/expires.load'), :if => os.debian? || os.ubuntu? do
+describe apache_conf('/etc/apache2/mods-enabled/expires.load'), if: os.debian? || os.ubuntu? do
   it { should exist }
 end
 
-describe apache_conf('/etc/apache2/mods-enabled/deflate.load'), :if => os.debian? || os.ubuntu? do
+describe apache_conf('/etc/apache2/mods-enabled/deflate.load'), if: os.debian? || os.ubuntu? do
   it { should exist }
 end
 
-describe file('/etc/httpd/conf.modules.d/00-optional.conf'), :if => os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
+describe file('/etc/httpd/conf.modules.d/00-optional.conf'), if: os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
   its('content') { should match /LoadModule expires_module/ }
   its('content') { should match /LoadModule deflate_module/ }
 end
 
 # Cache settings (if enabled)
-describe apache_conf('/etc/apache2/mods-enabled/cache.load'), :if => os.debian? || os.ubuntu? do
+describe apache_conf('/etc/apache2/mods-enabled/cache.load'), if: os.debian? || os.ubuntu? do
   it { should exist }
 end
 
-describe apache_conf('/etc/apache2/mods-enabled/cache_disk.load'), :if => os.debian? || os.ubuntu? do
+describe apache_conf('/etc/apache2/mods-enabled/cache_disk.load'), if: os.debian? || os.ubuntu? do
   it { should exist }
 end
 
@@ -172,12 +172,12 @@ if os.linux? && os.release.to_f >= 7
 end
 
 # Check for HTTP/2 protocol support in SSL configuration
-describe apache_conf('/etc/apache2/mods-enabled/ssl.conf'), :if => os.debian? || os.ubuntu? do
-  its('content') { should match(/Protocols h2 http\/1.1/) }
+describe apache_conf('/etc/apache2/mods-enabled/ssl.conf'), if: os.debian? || os.ubuntu? do
+  its('content') { should match(%r{Protocols h2 http/1.1}) }
 end
 
-describe apache_conf('/etc/httpd/conf.d/ssl.conf'), :if => os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
-  its('content') { should match(/Protocols h2 http\/1.1/) }
+describe apache_conf('/etc/httpd/conf.d/ssl.conf'), if: os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
+  its('content') { should match(%r{Protocols h2 http/1.1}) }
 end
 
 # Check TCP settings for high-performance workloads
@@ -195,11 +195,10 @@ describe command('ulimit -n') do
 end
 
 # Check for server status module for monitoring
-describe apache_conf('/etc/apache2/mods-enabled/status.load'), :if => os.debian? || os.ubuntu? do
+describe apache_conf('/etc/apache2/mods-enabled/status.load'), if: os.debian? || os.ubuntu? do
   it { should exist }
 end
 
-describe file('/etc/httpd/conf.modules.d/00-base.conf'), :if => os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
+describe file('/etc/httpd/conf.modules.d/00-base.conf'), if: os.redhat? || os.name == 'amazon' || os.name == 'fedora' do
   its('content') { should match(/LoadModule status_module/) }
 end
-

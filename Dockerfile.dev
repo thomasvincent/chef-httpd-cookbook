@@ -11,6 +11,7 @@ RUN apk add --no-cache \
     openssh-client \
     openssl-dev \
     readline-dev \
+    rsync \
     yaml-dev \
     zlib-dev
 
