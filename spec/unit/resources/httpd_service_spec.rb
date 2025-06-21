@@ -148,4 +148,3 @@ describe 'test::httpd_service' do
     end
   end
 end
-

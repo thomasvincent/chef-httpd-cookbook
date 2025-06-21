@@ -137,4 +137,3 @@ describe 'test::httpd_vhost' do
     end
   end
 end
-

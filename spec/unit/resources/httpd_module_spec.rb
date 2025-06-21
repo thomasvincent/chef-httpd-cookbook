@@ -111,4 +111,3 @@ describe 'test::httpd_module' do
     end
   end
 end
-

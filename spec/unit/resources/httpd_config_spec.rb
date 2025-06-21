@@ -99,4 +99,3 @@ describe 'test::httpd_config' do
     end
   end
 end
-

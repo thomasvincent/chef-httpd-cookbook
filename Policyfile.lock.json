@@ -1,5 +1,5 @@
 {
-  "revision_id": "9c94bc12967094e655ab42435cfc81a3255424eb979a5b55ddbf51094be38e01",
+  "revision_id": "7b8e5178c7b3c66183c3830b50d99cb57c9515f584779be37eddab94fd28704b",
   "name": "httpd",
   "run_list": [
     "recipe[httpd::default]"
@@ -21,14 +21,14 @@
     },
     "httpd": {
       "version": "1.0.0",
-      "identifier": "7399e18f757dfc9db726941b60f269c6972ce7ec",
-      "dotted_decimal_identifier": "32538816375258620.44392947665035506.116301660743660",
+      "identifier": "73764ee8f986b1d927db212e783482d98a44fab8",
+      "dotted_decimal_identifier": "32499703609919153.61123892054226996.143870839290552",
       "source": ".",
       "cache_key": null,
       "scm_info": {
         "scm": "git",
         "remote": "https://github.com/thomasvincent/chef-httpd-cookbook.git",
-        "revision": "55090f67601467a51137eb3eed11e46e76ae47cb",
+        "revision": "a581c02a0f41f47ec4988c1f87e017aeabda7a57",
         "working_tree_clean": false,
         "published": true,
         "synchronized_remote_branches": [
