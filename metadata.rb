@@ -23,6 +23,8 @@ supports 'arch', '>= 1.0'
 
 # We can handle our own firewall, logging, and SELinux
 # depends 'selinux', '~> 4.0' # Removed - causes warnings, we handle SELinux directly
-depends 'zypper', '~> 0.4' # Only for SUSE systems
+# depends 'zypper', '~> 0.4' # Removed - causes dependency issues in tests
 
-# Suggesting (but not requiring) useful related cookbooks # Modern secrets management # For compliance phase integration
+# Suggesting (but not requiring) useful related cookbooks
+# suggest 'vault', '~> 5.0' # Modern secrets management
+# suggest 'audit', '~> 9.0' # For compliance phase integration
