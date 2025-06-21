@@ -1,5 +1,5 @@
 {
-  "revision_id": "7b8e5178c7b3c66183c3830b50d99cb57c9515f584779be37eddab94fd28704b",
+  "revision_id": "0ca74fd2102864df3ab7d74058d6d80ccf7dc800335f590e7d4a4525edcdacbe",
   "name": "httpd",
   "run_list": [
     "recipe[httpd::default]"
@@ -21,14 +21,14 @@
     },
     "httpd": {
       "version": "1.0.0",
-      "identifier": "73764ee8f986b1d927db212e783482d98a44fab8",
-      "dotted_decimal_identifier": "32499703609919153.61123892054226996.143870839290552",
+      "identifier": "07dfaac9d1f60c2aac353700d809a490b8407afd",
+      "dotted_decimal_identifier": "2216249460389388.12011293577893897.180941473479421",
       "source": ".",
       "cache_key": null,
       "scm_info": {
         "scm": "git",
         "remote": "https://github.com/thomasvincent/chef-httpd-cookbook.git",
-        "revision": "a581c02a0f41f47ec4988c1f87e017aeabda7a57",
+        "revision": "f5c535848809e977118617a8e741b435f0e62f1f",
         "working_tree_clean": false,
         "published": true,
         "synchronized_remote_branches": [
@@ -61,17 +61,6 @@
         "artifactserver": "https://supermarket.chef.io:443/api/v1/cookbooks/yum/versions/7.4.20/download",
         "version": "7.4.20"
       }
-    },
-    "zypper": {
-      "version": "0.4.0",
-      "identifier": "28279427bc93cb2ad2e29f09545c7dc5aa17c6dc",
-      "dotted_decimal_identifier": "11302516343739339.12053819794478172.138287915714268",
-      "cache_key": "zypper-0.4.0-supermarket.chef.io",
-      "origin": "https://supermarket.chef.io:443/api/v1/cookbooks/zypper/versions/0.4.0/download",
-      "source_options": {
-        "artifactserver": "https://supermarket.chef.io:443/api/v1/cookbooks/zypper/versions/0.4.0/download",
-        "version": "0.4.0"
-      }
     }
   },
   "default_attributes": {
@@ -97,10 +86,6 @@
       [
         "yum",
         "= 7.4.20"
-      ],
-      [
-        "zypper",
-        "= 0.4.0"
       ]
     ],
     "dependencies": {
@@ -108,18 +93,12 @@
 
       ],
       "httpd (1.0.0)": [
-        [
-          "zypper",
-          "~> 0.4"
-        ]
+
       ],
       "selinux (4.0.0)": [
 
       ],
       "yum (7.4.20)": [
-
-      ],
-      "zypper (0.4.0)": [
 
       ]
     }
