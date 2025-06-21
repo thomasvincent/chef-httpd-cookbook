@@ -18,54 +18,100 @@ verifier:
   name: inspec
 
 platforms:
-  - name: ubuntu-20.04
-    driver:
-      image: dokken/ubuntu-20.04
-      pid_one_command: /bin/systemd
-      intermediate_instructions:
-        - RUN /usr/bin/apt-get update
-
   - name: ubuntu-22.04
     driver:
       image: dokken/ubuntu-22.04
       pid_one_command: /bin/systemd
       intermediate_instructions:
-        - RUN /usr/bin/apt-get update
+        - RUN /usr/bin/apt-get update -qq
+        - RUN /usr/bin/apt-get install -y curl
+
+  - name: ubuntu-24.04
+    driver:
+      image: dokken/ubuntu-24.04
+      pid_one_command: /bin/systemd
+      intermediate_instructions:
+        - RUN /usr/bin/apt-get update -qq
+        - RUN /usr/bin/apt-get install -y curl
 
   - name: debian-11
     driver:
       image: dokken/debian-11
       pid_one_command: /bin/systemd
       intermediate_instructions:
-        - RUN /usr/bin/apt-get update
+        - RUN /usr/bin/apt-get update -qq
+        - RUN /usr/bin/apt-get install -y curl
+
+  - name: debian-12
+    driver:
+      image: dokken/debian-12
+      pid_one_command: /bin/systemd
+      intermediate_instructions:
+        - RUN /usr/bin/apt-get update -qq
+        - RUN /usr/bin/apt-get install -y curl
+
+  - name: centos-stream-8
+    driver:
+      image: dokken/centos-stream-8
+      pid_one_command: /usr/lib/systemd/systemd
+      intermediate_instructions:
+        - RUN yum -y install sudo curl
+
+  - name: centos-stream-9
+    driver:
+      image: dokken/centos-stream-9
+      pid_one_command: /usr/lib/systemd/systemd
+      intermediate_instructions:
+        - RUN yum -y install sudo curl
 
   - name: almalinux-8
     driver:
       image: dokken/almalinux-8
       pid_one_command: /usr/lib/systemd/systemd
       intermediate_instructions:
-        - RUN yum -y install sudo
+        - RUN yum -y install sudo curl
 
   - name: almalinux-9
     driver:
       image: dokken/almalinux-9
       pid_one_command: /usr/lib/systemd/systemd
       intermediate_instructions:
-        - RUN yum -y install sudo
+        - RUN yum -y install sudo curl
 
-  - name: amazonlinux-2023
+  - name: amazon-2
+    driver:
+      image: dokken/amazonlinux-2
+      pid_one_command: /usr/lib/systemd/systemd
+      intermediate_instructions:
+        - RUN yum -y install sudo curl
+
+  - name: amazon-2023
     driver:
       image: dokken/amazonlinux-2023
       pid_one_command: /usr/lib/systemd/systemd
       intermediate_instructions:
-        - RUN yum -y install sudo
+        - RUN yum -y install sudo curl
 
   - name: rockylinux-8
     driver:
       image: dokken/rockylinux-8
       pid_one_command: /usr/lib/systemd/systemd
       intermediate_instructions:
-        - RUN yum -y install sudo
+        - RUN yum -y install sudo curl
+
+  - name: rockylinux-9
+    driver:
+      image: dokken/rockylinux-9
+      pid_one_command: /usr/lib/systemd/systemd
+      intermediate_instructions:
+        - RUN yum -y install sudo curl
+
+  - name: opensuse-leap-15
+    driver:
+      image: dokken/opensuse-leap-15
+      pid_one_command: /usr/lib/systemd/systemd
+      intermediate_instructions:
+        - RUN zypper -n install sudo curl
 
 suites:
   - name: default
@@ -200,3 +246,93 @@ suites:
               - throughput
               - response_time
               - workers
+
+  - name: http3
+    run_list:
+      - recipe[httpd::default]
+    verifier:
+      inspec_tests:
+        - test/integration/http3
+    attributes:
+      httpd:
+        default_vhost:
+          enabled: true
+        http3:
+          enabled: true
+          quic_module: true
+          alt_svc_header: "h3=\":443\"; ma=86400"
+        ssl:
+          enabled: true
+          certificate: /etc/pki/tls/certs/localhost.crt
+          certificate_key: /etc/pki/tls/private/localhost.key
+          protocols: ["TLSv1.2", "TLSv1.3"]
+
+  - name: security-hardening
+    run_list:
+      - recipe[httpd::default]
+    verifier:
+      inspec_tests:
+        - test/integration/security-hardening
+    attributes:
+      httpd:
+        default_vhost:
+          enabled: true
+        security:
+          server_tokens: "Prod"
+          server_signature: "Off"
+          trace_enable: "Off"
+          hsts_enabled: true
+          hsts_max_age: 31536000
+          content_security_policy: "default-src 'self'"
+          x_frame_options: "SAMEORIGIN"
+          x_content_type_options: "nosniff"
+          x_xss_protection: "1; mode=block"
+          referrer_policy: "strict-origin-when-cross-origin"
+          permissions_policy: "geolocation=(), camera=(), microphone=()"
+
+  - name: advanced-logging
+    run_list:
+      - recipe[httpd::default]
+    verifier:
+      inspec_tests:
+        - test/integration/advanced-logging
+    attributes:
+      httpd:
+        default_vhost:
+          enabled: true
+        logging:
+          error_log_level: "warn"
+          custom_log_format: "combined"
+          json_logging: true
+          buffer_size: 8192
+          rotation:
+            enabled: true
+            interval: "daily"
+            max_size: "100M"
+            compress: true
+            keep: 10
+
+  - name: zero-downtime
+    run_list:
+      - recipe[httpd::default]
+    verifier:
+      inspec_tests:
+        - test/integration/zero-downtime
+    attributes:
+      httpd:
+        default_vhost:
+          enabled: true
+        graceful_restart:
+          enabled: true
+          timeout: 60
+        mpm: event
+        performance:
+          max_request_workers: 400
+          threads_per_child: 25
+          max_connections_per_child: 10000
+          server_limit: 16
+          thread_limit: 64
+        zero_downtime:
+          socket_activation: true
+          graceful_shutdown: true
+          shutdown_timeout: 30

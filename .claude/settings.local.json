@@ -31,8 +31,13 @@
       "Bash(gem search:*)",
       "Bash(rm:*)",
       "Bash(cat:*)",
-      "Bash(timeout 30 bundle exec rspec spec/unit/libraries/helpers_spec.rb --format progress 2 >& 1)"
+      "Bash(timeout 30 bundle exec rspec spec/unit/libraries/helpers_spec.rb --format progress 2 >& 1)",
+      "Bash(chef exec:*)",
+      "Bash(touch:*)",
+      "Bash(docker:*)",
+      "Bash(/dev/null)"
     ],
     "deny": []
-  }
+  },
+  "enableAllProjectMcpServers": false
 }

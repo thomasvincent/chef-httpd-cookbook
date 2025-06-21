@@ -6,43 +6,58 @@
 
 A modern, advanced Chef cookbook to install and configure Apache HTTP Server with comprehensive functionality.
 
-## Ruby Environment Setup
+## Development Setup
 
-This project uses Ruby 3.2.0 and is configured to work with **rbenv** for Ruby version management.
+This cookbook uses Docker for consistent development and testing environments.
 
 ### Prerequisites
 
-1. Install rbenv (if not already installed):
+1. Install Docker and docker-compose
+2. (Optional) Install pre-commit for git hooks:
    ```bash
-   brew install rbenv
-   ```
-
-2. Initialize rbenv in your shell:
-   ```bash
-   echo 'eval "$(rbenv init -)"' >> ~/.zshrc  # or ~/.bashrc
-   source ~/.zshrc  # or source ~/.bashrc
+   pip install pre-commit
    ```
 
 ### Quick Setup
 
-Run the setup script:
 ```bash
-./bin/setup-ruby
+./bin/setup-dev
 ```
 
 This will:
-- Install Ruby 3.2.0 via rbenv
-- Set the local Ruby version
-- Install bundler
-- Install all gem dependencies
+- Build the development Docker container
+- Install all dependencies
+- Set up pre-commit hooks (if available)
 
-### Manual Setup
+### Docker-Based Testing
 
-If you prefer to set up manually:
+All dependencies are containerized for consistent testing:
+
+```bash
+# Run all tests
+./bin/test-docker
+
+# Run specific Test Kitchen suite
+./bin/test-docker default-ubuntu-22.04
+
+# Enter development container
+docker-compose run --rm dev bash
+
+# Run unit tests only
+docker-compose run --rm dev bundle exec rspec
+
+# Run linting only
+docker-compose run --rm dev bundle exec cookstyle
+```
+
+### Local Ruby Setup (Alternative)
+
+If you prefer local development:
+
 ```bash
 rbenv install 3.2.0
 rbenv local 3.2.0
-gem install bundler
+gem install bundler:2.4.22
 bundle install
 ```
 

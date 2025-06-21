@@ -1,0 +1,29 @@
+#!/bin/bash
+set -e
+
+echo "Setting up Docker environment for testing..."
+
+# Build the development container
+docker-compose build dev
+
+# Run bundle install in the container
+docker-compose run --rm dev bundle install
+
+# Run syntax checks
+echo "Running syntax checks..."
+docker-compose run --rm dev bundle exec cookstyle
+
+# Run unit tests
+echo "Running ChefSpec tests..."
+docker-compose run --rm dev bundle exec rspec
+
+# Run integration tests with Test Kitchen
+if [ -n "$1" ]; then
+  echo "Running Test Kitchen for suite: $1"
+  docker-compose run --rm -e CHEF_LICENSE=accept-silent dev bundle exec kitchen test "$1"
+else
+  echo "Running Test Kitchen for all suites..."
+  docker-compose run --rm -e CHEF_LICENSE=accept-silent dev bundle exec kitchen test
+fi
+
+echo "All tests completed!"
