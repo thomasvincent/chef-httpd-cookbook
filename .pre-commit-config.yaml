@@ -1,0 +1,63 @@
+---
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: check-json
+      - id: detect-private-key
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+
+  - repo: https://github.com/chef/cookstyle
+    rev: v7.32.8
+    hooks:
+      - id: cookstyle
+        name: Cookstyle
+        entry: cookstyle
+        language: ruby
+        files: \.(rb|erb)$
+        args: ['--display-cop-names', '--extra-details']
+        require_serial: true
+
+  - repo: local
+    hooks:
+      - id: chef-syntax
+        name: Chef Syntax Check
+        entry: bash -c 'find . -name "*.rb" -not -path "./vendor/*" -exec ruby -c {} \;'
+        language: system
+        files: \.rb$
+        pass_filenames: false
+
+      - id: json-syntax
+        name: JSON Syntax Check
+        entry: bash -c 'find . -name "*.json" -not -path "./vendor/*" -exec python -m json.tool {} /dev/null \;'
+        language: system
+        files: \.json$
+        pass_filenames: false
+
+      - id: yaml-syntax
+        name: YAML Syntax Check
+        entry: bash -c 'find . -name "*.yml" -o -name "*.yaml" | grep -v vendor | xargs -I {} python -c "import yaml; yaml.safe_load(open(\"{}\"))"'
+        language: system
+        files: \.(yml|yaml)$
+        pass_filenames: false
+
+      - id: erb-syntax
+        name: ERB Template Syntax Check
+        entry: bash -c 'find templates -name "*.erb" -exec erb -P -x -T "-" {} \; | ruby -c'
+        language: system
+        files: \.erb$
+        pass_filenames: false
+
+# Exclude paths
+exclude: |
+  (?x)^(
+    vendor/.*|
+    .kitchen/.*|
+    Policyfile.lock.json
+  )$

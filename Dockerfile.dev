@@ -1,0 +1,35 @@
+FROM ruby:3.2-alpine
+
+# Install system dependencies
+RUN apk add --no-cache \
+    bash \
+    build-base \
+    curl \
+    docker \
+    git \
+    libffi-dev \
+    openssh-client \
+    openssl-dev \
+    readline-dev \
+    yaml-dev \
+    zlib-dev
+
+# Set up working directory
+WORKDIR /cookbook
+
+# Install Chef and development tools
+RUN gem install bundler:2.4.22
+
+# Copy Gemfile first for better caching
+COPY Gemfile Gemfile.lock* ./
+
+# Install gems
+RUN bundle config set --local path 'vendor/bundle' && \
+    bundle config set --local jobs 4 && \
+    bundle install || bundle install
+
+# Copy the rest of the cookbook
+COPY . .
+
+# Default command
+CMD ["/bin/bash"]
