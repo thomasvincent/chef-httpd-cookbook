@@ -5,7 +5,6 @@
 title 'Apache HTTP Server Security Controls'
 
 config_file = os.debian? ? '/etc/apache2/apache2.conf' : '/etc/httpd/conf/httpd.conf'
-os.debian? ? '/etc/apache2' : '/etc/httpd'
 
 control 'httpd-security-1' do
   impact 1.0

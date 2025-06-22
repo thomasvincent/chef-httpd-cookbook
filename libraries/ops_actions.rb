@@ -125,9 +125,6 @@ module Httpd
           FileUtils.chmod_R(0o755, config_dir)
 
           # Fix ownership
-          node['platform_family'] == 'debian' ? 'www-data' : 'apache'
-          node['platform_family'] == 'debian' ? 'www-data' : 'apache'
-
           cmd = shell_out("chown -R root:root #{config_dir}")
           Chef::Log.warn("Failed to change ownership of config directory: #{cmd.stderr}") unless cmd.exitstatus.zero?
         else

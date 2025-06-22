@@ -6,7 +6,6 @@ title 'Apache HTTP Server Base Controls'
 
 httpd_service_name = os.debian? ? 'apache2' : 'httpd'
 config_file = os.debian? ? '/etc/apache2/apache2.conf' : '/etc/httpd/conf/httpd.conf'
-os.debian? ? '/etc/apache2' : '/etc/httpd'
 
 control 'httpd-1' do
   impact 1.0

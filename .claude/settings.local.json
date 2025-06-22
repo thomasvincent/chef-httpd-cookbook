@@ -42,7 +42,9 @@
       "Bash(git checkout:*)",
       "Bash(gh api:*)",
       "Bash(true)",
-      "Bash(gh run cancel:*)"
+      "Bash(gh run cancel:*)",
+      "Bash(gh workflow:*)",
+      "Bash(gh run download:*)"
     ],
     "deny": []
   },
