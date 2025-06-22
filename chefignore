@@ -1,0 +1,102 @@
+# Put files/directories that should be ignored in this file when uploading
+# to a Chef Infra Server or Supermarket.
+# Lines that start with '# ' are comments.
+
+# OS generated files #
+######################
+.DS_Store
+ehthumbs.db
+Icon?
+nohup.out
+Thumbs.db
+
+# EDITORS #
+###########
+.#*
+.project
+.settings
+*_flymake
+*_flymake.*
+*.bak
+*.sw[a-z]
+*.tmproj
+*~
+\#*
+REVISION
+TAGS*
+tmtags
+.vscode
+.idea
+
+# COMPILED #
+############
+*.class
+*.com
+*.dll
+*.exe
+*.o
+*.pyc
+*.so
+*/rdoc/
+a.out
+mkmf.log
+
+# PACKAGING #
+#############
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# LOGS #
+########
+*.log
+
+# DATABASES #
+#############
+*.db
+*.sqlite
+*.sqlite3
+
+# MISC #
+########
+*.swp
+*.swo
+*~
+.bundle
+.byebug_history
+.env
+.kitchen/
+.kitchen.local.yml
+coverage/
+tmp/
+.rspec_status
+.docker/
+.vagrant/
+node_modules/
+
+# DEVELOPMENT #
+###############
+.git/
+.github/
+spec/
+test/
+.gitignore
+.rubocop.yml
+.travis.yml
+.foodcritic
+.codeclimate.yml
+Berksfile
+Berksfile.lock
+chefignore
+Gemfile
+Gemfile.lock
+Rakefile
+.rake_test_cache
+Policyfile.lock.json
+TESTING.md
+examples/

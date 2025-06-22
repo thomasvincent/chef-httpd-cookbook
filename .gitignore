@@ -2,8 +2,7 @@
 .kitchen.local.yml
 coverage/
 .idea/
-# VS Code settings are project-specific, so we don't ignore .vscode/
-*.lock
+.vscode/
 *.swp
 *.swo
 .bundle/
@@ -11,9 +10,12 @@ vendor/
 .docker/
 .vagrant/
 Gemfile.lock
+Policyfile.lock.json
 .rspec_status
 tmp/
 .env
 .DS_Store
 node_modules/
-.devcontainer/Gemfile.lock
+.chef/
+*.gem
+*.rbc
