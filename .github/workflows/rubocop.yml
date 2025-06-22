@@ -178,9 +178,7 @@ jobs:
                 },
                 results: results,
                 automationDetails: {
-                  id: `cookstyle/${context.runId}`,
-                  category: context.eventName === 'pull_request' ? 
-                    `cookstyle-pr-${context.payload.pull_request.number}` : 'cookstyle'
+                  id: `cookstyle/${context.runId}`
                 }
               }]
             };
@@ -191,6 +189,7 @@ jobs:
       - name: Upload SARIF
         if: hashFiles('reports/cookstyle.sarif') != ''
         uses: github/codeql-action/upload-sarif@v3
+        continue-on-error: true  # Don't fail if code scanning is not enabled
         with:
           sarif_file: reports/cookstyle.sarif
           wait-for-processing: ${{ github.event_name != 'pull_request' }}
@@ -202,6 +201,20 @@ jobs:
           name: cookstyle-reports
           path: reports/
           retention-days: 30
+
+      - name: Report final status
+        if: always() && steps.analyze.outputs.exit_code
+        run: |
+          if [[ "${{ steps.analyze.outputs.status }}" == "success" ]]; then
+            echo "✅ Cookstyle analysis passed!"
+            exit 0
+          elif [[ "${{ steps.analyze.outputs.status }}" == "failure" ]]; then
+            echo "❌ Cookstyle found issues. Check the artifacts for details."
+            exit 1
+          else
+            echo "⚠️ Cookstyle analysis encountered an error."
+            exit 1
+          fi
 
   comment:
     name: PR Comment
