@@ -39,7 +39,10 @@
       "Bash(git push:*)",
       "Bash(gh run list:*)",
       "Bash(CHEF_LICENSE=accept-silent docker-compose run --rm dev bundle exec kitchen test default-ubuntu-2204 --no-color)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(gh api:*)",
+      "Bash(true)",
+      "Bash(gh run cancel:*)"
     ],
     "deny": []
   },

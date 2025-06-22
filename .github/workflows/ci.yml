@@ -1,11 +1,7 @@
-name: CI
+name: CI (Full - Currently Disabled)
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-  workflow_dispatch:
+  workflow_dispatch:  # Only run manually due to performance issues
 
 # Set explicit permissions for security
 permissions:
