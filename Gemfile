@@ -11,7 +11,7 @@ group :development do
   gem 'chef', '~> 18.0'
   gem 'chef-cli', '~> 5.6'
   gem 'chefspec', '~> 9.3'
-  gem 'cookstyle', '~> 7.32'
+  gem 'cookstyle', '~> 8.4'
   gem 'rspec', '~> 3.12.0'
 end
 
