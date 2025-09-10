@@ -6,7 +6,7 @@ source 'https://rubygems.org'
 ruby '>= 3.2.0'
 
 group :development do
-  gem 'ruby-lsp', '~> 0.24.0'
+  gem 'ruby-lsp', '~> 0.26.1'
   gem 'debug', '~> 1.9'
   gem 'chef', '~> 18.0'
   gem 'chef-cli', '~> 5.6'
