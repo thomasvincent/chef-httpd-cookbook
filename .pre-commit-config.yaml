@@ -1,0 +1,42 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: detect-private-key
+
+  - repo: https://github.com/mattlqx/pre-commit-ruby
+    rev: v1.3.8
+    hooks:
+      - id: rubocop
+        name: Rubocop
+        args: ['--auto-correct']
+
+  - repo: local
+    hooks:
+      - id: cookstyle
+        name: Chef Cookstyle
+        entry: cookstyle
+        language: system
+        files: '\.rb$'
+        pass_filenames: true
+        args: ['--auto-correct']
+
+      - id: foodcritic
+        name: Chef Foodcritic
+        entry: bash -c 'if command -v foodcritic &> /dev/null; then foodcritic . -f any; fi'
+        language: system
+        pass_filenames: false
+        files: '(recipes|attributes|libraries|providers|resources)/.*\.rb$'
+
+  # YAML linting
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+        args: ['-d', '{extends: relaxed, rules: {line-length: {max: 120}}}']
