@@ -1,0 +1,111 @@
+---
+# Test Kitchen configuration for Apache 2.4+ cookbook
+# Supports comprehensive testing with Docker and various platforms
+
+driver:
+  name: dokken
+  privileged: true
+  chef_version: 18
+  chef_license: accept-no-persist
+
+transport:
+  name: dokken
+
+provisioner:
+  name: dokken
+  chef_license: accept-no-persist
+  multiple_converge: 2
+  enforce_idempotency: true
+  deprecations_as_errors: true
+  always_update_cookbooks: true
+
+verifier:
+  name: inspec
+
+platforms:
+  - name: ubuntu-22.04
+    driver:
+      image: dokken/ubuntu-22.04
+      pid_one_command: /bin/systemd
+      intermediate_instructions:
+        - RUN /usr/bin/apt-get update
+        - RUN /usr/bin/apt-get install -y sudo curl
+
+  - name: ubuntu-24.04
+    driver:
+      image: dokken/ubuntu-24.04
+      pid_one_command: /bin/systemd
+      intermediate_instructions:
+        - RUN /usr/bin/apt-get update
+        - RUN /usr/bin/apt-get install -y sudo curl
+
+  - name: debian-12
+    driver:
+      image: dokken/debian-12
+      pid_one_command: /bin/systemd
+      intermediate_instructions:
+        - RUN /usr/bin/apt-get update
+        - RUN /usr/bin/apt-get install -y sudo curl
+
+  - name: rockylinux-9
+    driver:
+      image: dokken/rockylinux-9
+      pid_one_command: /usr/lib/systemd/systemd
+      intermediate_instructions:
+        - RUN dnf install -y sudo curl
+
+  - name: almalinux-9
+    driver:
+      image: dokken/almalinux-9
+      pid_one_command: /usr/lib/systemd/systemd
+      intermediate_instructions:
+        - RUN dnf install -y sudo curl
+
+  - name: amazonlinux-2023
+    driver:
+      image: dokken/amazonlinux-2023
+      pid_one_command: /usr/lib/systemd/systemd
+      intermediate_instructions:
+        - RUN dnf install -y sudo curl
+
+suites:
+  - name: default
+    run_list:
+      - recipe[httpd::default]
+    verifier:
+      inspec_tests:
+        - test/integration/default
+    attributes:
+      httpd:
+        service_name: httpd
+        port: 80
+
+  - name: ssl
+    run_list:
+      - recipe[httpd::default]
+      - recipe[httpd::ssl]
+    verifier:
+      inspec_tests:
+        - test/integration/ssl
+    attributes:
+      httpd:
+        service_name: httpd
+        port: 443
+        ssl:
+          enabled: true
+          certificate_path: /etc/ssl/certs/localhost.crt
+          key_path: /etc/ssl/private/localhost.key
+
+  - name: vhosts
+    run_list:
+      - recipe[httpd::default]
+      - recipe[httpd::vhosts]
+    verifier:
+      inspec_tests:
+        - test/integration/vhosts
+    attributes:
+      httpd:
+        vhosts:
+          example.com:
+            port: 80
+            document_root: /var/www/example.com
