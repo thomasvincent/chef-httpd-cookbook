@@ -1,93 +1,23 @@
 # HTTPD Cookbook
 
 [![Cookbook Version](https://img.shields.io/cookbook/v/httpd.svg)](https://supermarket.chef.io/cookbooks/httpd)
-[![Build Status](https://img.shields.io/github/workflow/status/thomasvincent/httpd-cookbook/ci)](https://github.com/thomasvincent/httpd-cookbook/actions/workflows/ci.yml)
+[![CI](https://github.com/thomasvincent/chef-httpd-cookbook/actions/workflows/ci.yml/badge.svg)](https://github.com/thomasvincent/chef-httpd-cookbook/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-A modern, advanced Chef cookbook to install and configure Apache HTTP Server with comprehensive functionality.
-
-## Development Setup
-
-This cookbook uses Docker for consistent development and testing environments.
-
-### Prerequisites
-
-1. Install Docker and docker-compose
-2. (Optional) Install pre-commit for git hooks:
-   ```bash
-   pip install pre-commit
-   ```
-
-### Quick Setup
-
-```bash
-./bin/setup-dev
-```
-
-This will:
-- Build the development Docker container
-- Install all dependencies
-- Set up pre-commit hooks (if available)
-
-### Docker-Based Testing
-
-All dependencies are containerized for consistent testing:
-
-```bash
-# Run all tests
-./bin/test-docker
-
-# Run specific Test Kitchen suite
-./bin/test-docker default-ubuntu-22.04
-
-# Enter development container
-docker-compose run --rm dev bash
-
-# Run unit tests only
-docker-compose run --rm dev bundle exec rspec
-
-# Run linting only
-docker-compose run --rm dev bundle exec cookstyle
-```
-
-### Local Ruby Setup (Alternative)
-
-If you prefer local development:
-
-```bash
-rbenv install 3.2.0
-rbenv local 3.2.0
-gem install bundler:2.4.22
-bundle install
-```
-
-### Resolving Version Manager Conflicts
-
-If you have both asdf and rbenv installed, this project is configured to use rbenv. To avoid conflicts:
-
-1. Ensure rbenv is loaded in your shell before asdf
-2. Or temporarily disable asdf for this project:
-   ```bash
-   export PATH="/opt/homebrew/bin/rbenv:$PATH"
-   eval "$(rbenv init -)"
-   ```
-
-### VS Code Integration
-
-The project includes VS Code settings that configure the Ruby LSP to use rbenv. If you're using VS Code, the ruby-lsp extension should work automatically after running the setup.
+A modern, advanced Chef cookbook to install and configure Apache HTTP Server 2.4+ with comprehensive SSL/TLS support, Let's Encrypt integration, and security best practices.
 
 ## Requirements
 
 ### Platforms
 
-- Ubuntu 20.04+
-- Debian 11+
-- CentOS Stream 8+
-- Red Hat Enterprise Linux 8+
-- Amazon Linux 2+
-- Rocky Linux 8+
-- AlmaLinux 8+
-- Fedora 35+
+- Ubuntu 22.04+, 24.04+
+- Debian 11+, 12+
+- CentOS Stream 9+
+- Red Hat Enterprise Linux 9+
+- Amazon Linux 2023+
+- Rocky Linux 9+
+- AlmaLinux 9+
+- Fedora 38+
 
 ### Chef
 
@@ -95,29 +25,101 @@ The project includes VS Code settings that configure the Ruby LSP to use rbenv. 
 
 ### Dependencies
 
-- `selinux` - For SELinux configuration on RHEL-family systems
-- `firewall` - For managing firewall rules
-- `logrotate` - For managing log rotation
-- `opensslv3` - For modern SSL configurations
-- `system` - For system-level configurations
-- `poise` - For advanced custom resources
+- `acme` - For Let's Encrypt certificate management
 
 ## Features
 
-- Apache installation from OS packages or source
-- Multi-MPM support (event, worker, prefork)
-- Modular configuration with smart default settings
-- TLS/SSL support with modern cipher configurations
-- Virtual host management with template flexibility
-- Advanced logging options
-- Performance tuning based on system resources
-- SELinux and AppArmor integration
-- HTTP/2 and HTTP/3 support
-- Full integration test coverage with InSpec
-- Health check and monitoring integration
-- Zero Downtime Deployment pattern with graceful reloads
-- Ops Actions pattern for backup/restore and blue-green deployments
-- Telemetry integration with Prometheus and Grafana
+- **Apache 2.4+ Support** - Modern Apache with HTTP/2 and HTTP/3
+- **SSL/TLS Hardening** - Modern cipher suites based on Mozilla guidelines
+- **Let's Encrypt Integration** - Automatic certificate provisioning and renewal
+- **Multi-Platform** - Works across all major Linux distributions
+- **Test Coverage** - Comprehensive unit and integration tests
+- **CI/CD Ready** - GitHub Actions workflow included
+
+## SSL/TLS Configuration
+
+### Basic SSL Setup
+
+Include the SSL recipe in your run list:
+
+```ruby
+include_recipe 'httpd::ssl'
+```
+
+Or in your node's run_list:
+
+```json
+{
+  "run_list": [
+    "recipe[httpd::default]",
+    "recipe[httpd::ssl]"
+  ]
+}
+```
+
+### Let's Encrypt Integration
+
+To enable automatic Let's Encrypt certificates:
+
+```ruby
+default['httpd']['ssl']['letsencrypt']['enabled'] = true
+default['httpd']['ssl']['letsencrypt']['contact'] = 'admin@example.com'
+default['httpd']['ssl']['letsencrypt']['domains'] = ['example.com', 'www.example.com']
+default['httpd']['ssl']['letsencrypt']['staging'] = false  # Set to true for testing
+```
+
+### Custom SSL Configuration
+
+```ruby
+default['httpd']['ssl']['protocols'] = 'TLSv1.2 TLSv1.3'
+default['httpd']['ssl']['ciphers'] = 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256'
+default['httpd']['ssl']['honor_cipher_order'] = 'off'
+default['httpd']['ssl']['hsts']['enabled'] = true
+default['httpd']['ssl']['hsts']['max_age'] = 63072000
+default['httpd']['ssl']['ocsp_stapling'] = true
+```
+
+### SSL Virtual Host Example
+
+```ruby
+httpd_vhost 'secure.example.com' do
+  port 443
+  document_root '/var/www/secure.example.com'
+  ssl_enabled true
+  ssl_cert '/etc/letsencrypt/live/example.com/fullchain.pem'
+  ssl_key '/etc/letsencrypt/live/example.com/privkey.pem'
+  redirect_http_to_https true
+  action :create
+end
+```
+
+## Security Best Practices
+
+This cookbook implements the following security measures:
+
+### TLS Configuration
+- **TLS 1.2 and 1.3 only** - Older protocols (SSLv3, TLS 1.0, TLS 1.1) are disabled
+- **Modern cipher suites** - Based on Mozilla SSL Configuration Generator
+- **Perfect Forward Secrecy** - ECDHE and DHE key exchange only
+- **OCSP Stapling** - Improved certificate validation performance
+
+### HTTP Security Headers
+- **HSTS** - Strict Transport Security with preload support
+- **X-Content-Type-Options** - Prevents MIME type sniffing
+- **X-Frame-Options** - Clickjacking protection
+- **X-XSS-Protection** - XSS filter enabled
+- **Referrer-Policy** - Controls referrer information
+
+### Server Hardening
+- **ServerTokens Prod** - Minimal server information disclosure
+- **ServerSignature Off** - No server signature on error pages
+- **TraceEnable Off** - HTTP TRACE method disabled
+- **Directory listing disabled** - Prevents information disclosure
+
+### Certificate Management
+- **Automatic renewal** - Certbot cron job for Let's Encrypt
+- **Secure key storage** - Proper file permissions (0600)
+- **Certificate validation** - OCSP stapling enabled
 
 ## Custom Resources
 
@@ -127,64 +129,12 @@ Install Apache HTTP Server.
 
 ```ruby
 httpd_install 'default' do
-  version '2.4.57'
+  version '2.4'
   mpm 'event'
   install_method 'package'
   action :install
 end
 ```
-
-Properties:
-- `version` - Apache version to install
-- `mpm` - MPM to use (event, worker, prefork)
-- `install_method` - Installation method (package, source)
-- `package_name` - Package name, if using package installation
-- `source_url` - Source URL, if using source installation
-- `checksum` - Checksum for source package
-
-### httpd_config
-
-Create Apache configuration snippets.
-
-```ruby
-httpd_config 'security' do
-  source 'security.conf.erb'
-  cookbook 'httpd'
-  notifies :restart, 'httpd_service[default]'
-  action :create
-end
-```
-
-Properties:
-- `source` - Template source
-- `cookbook` - Cookbook containing the template
-- `variables` - Variables to pass to the template
-- `config_name` - Name of the configuration file (defaults to resource name)
-
-### httpd_module
-
-Enable or disable Apache modules.
-
-```ruby
-httpd_module 'ssl' do
-  action :enable
-end
-
-httpd_module 'status' do
-  configuration <<~EOL
-    <Location "/server-status">
-      SetHandler server-status
-      Require local
-    </Location>
-  EOL
-  action :enable
-end
-```
-
-Properties:
-- `module_name` - Module name (defaults to resource name)
-- `configuration` - Configuration for the module
-- `install_package` - Whether to install package for the module
 
 ### httpd_vhost
 
@@ -196,30 +146,17 @@ httpd_vhost 'example.com' do
   document_root '/var/www/example.com'
   action :create
 end
-
-httpd_vhost 'secure.example.com' do
-  port 443
-  document_root '/var/www/secure.example.com'
-  ssl_enabled true
-  ssl_cert '/etc/ssl/certs/example.com.crt'
-  ssl_key '/etc/ssl/private/example.com.key'
-  action :create
-end
 ```
 
-Properties:
-- `domain` - Domain name (defaults to resource name)
-- `port` - Port to listen on
-- `document_root` - Document root directory
-- `server_admin` - Server admin email
-- `error_log` - Error log path
-- `access_log` - Access log path
-- `ssl_enabled` - Whether to enable SSL
-- `ssl_cert` - SSL certificate path
-- `ssl_key` - SSL key path
-- `ssl_chain` - SSL chain path
-- `redirect_http_to_https` - Whether to redirect HTTP to HTTPS
-- `custom_directives` - Custom Apache directives to include
+### httpd_module
+
+Enable or disable Apache modules.
+
+```ruby
+httpd_module 'ssl' do
+  action :enable
+end
+```
 
 ### httpd_service
 
@@ -231,144 +168,84 @@ httpd_service 'default' do
 end
 ```
 
-Properties:
-- `service_name` - Service name
-- `restart_command` - Command to restart the service
-- `reload_command` - Command to reload the service
-- `supports` - Service supports hash
-
 ## Attributes
 
-See the [attributes file](attributes/default.rb) for default values.
+### SSL Attributes
 
-### General
-
-- `node['httpd']['version']` - Apache version
-- `node['httpd']['install_method']` - Installation method
-- `node['httpd']['service_name']` - Service name
-- `node['httpd']['root_dir']` - Root directory
-- `node['httpd']['conf_dir']` - Configuration directory
-
-### MPM
-
-- `node['httpd']['mpm']` - Multi-Processing Module to use
-
-### Security
-
-- `node['httpd']['security']['server_tokens']` - ServerTokens directive
-- `node['httpd']['security']['server_signature']` - ServerSignature directive
-- `node['httpd']['security']['trace_enable']` - TraceEnable directive
-
-### Performance
-
-- `node['httpd']['performance']['start_servers']` - StartServers directive
-- `node['httpd']['performance']['min_spare_threads']` - MinSpareThreads directive
-- `node['httpd']['performance']['max_spare_threads']` - MaxSpareThreads directive
-- `node['httpd']['performance']['thread_limit']` - ThreadLimit directive
-- `node['httpd']['performance']['threads_per_child']` - ThreadsPerChild directive
-- `node['httpd']['performance']['max_request_workers']` - MaxRequestWorkers directive
-- `node['httpd']['performance']['max_connections_per_child']` - MaxConnectionsPerChild directive
-
-### Telemetry
-
-- `node['httpd']['telemetry']['enabled']` - Enable telemetry functionality
-- `node['httpd']['telemetry']['prometheus']['enabled']` - Enable Prometheus exporter
-- `node['httpd']['telemetry']['prometheus']['scrape_uri']` - URI to scrape for metrics
-- `node['httpd']['telemetry']['prometheus']['telemetry_path']` - Path where metrics will be exposed
-- `node['httpd']['telemetry']['prometheus']['metrics']` - Metrics to collect
-- `node['httpd']['telemetry']['prometheus']['allow_ips']` - IPs allowed to access metrics
-- `node['httpd']['telemetry']['grafana']['enabled']` - Enable Grafana dashboard
-- `node['httpd']['telemetry']['grafana']['url']` - Grafana URL
-- `node['httpd']['telemetry']['grafana']['datasource']` - Prometheus datasource name
-- `node['httpd']['telemetry']['grafana']['api_key']` - Grafana API key
-
-## Recipes
-
-- `default.rb` - Calls other recipes
-- `install.rb` - Installs Apache
-- `configure.rb` - Basic configuration
-- `modules.rb` - Enables default modules
-- `service.rb` - Sets up service
-- `vhosts.rb` - Configures virtual hosts from attributes
-- `security.rb` - Applies security hardening
-- `telemetry.rb` - Configures Prometheus and Grafana integration
-
-## Usage
-
-### Basic
-
-Include `httpd` in your node's `run_list`:
-
-```json
-{
-  "run_list": [
-    "recipe[httpd::default]"
-  ]
-}
-```
-
-### Advanced
-
-Configure attributes in a role or wrapper cookbook:
-
-```ruby
-default_attributes = {
-  'httpd' => {
-    'mpm' => 'event',
-    'performance' => {
-      'max_request_workers' => 400,
-      'threads_per_child' => 25
-    },
-    'telemetry' => {
-      'enabled' => true,
-      'prometheus' => {
-        'enabled' => true,
-        'scrape_uri' => '/server-status?auto',
-        'telemetry_path' => '/metrics',
-        'metrics' => %w(connections scoreboard cpu requests)
-      },
-      'grafana' => {
-        'enabled' => true,
-        'url' => 'http://grafana.example.com:3000',
-        'datasource' => 'Prometheus'
-      }
-    },
-    'vhosts' => {
-      'example.com' => {
-        'port' => 80,
-        'document_root' => '/var/www/example.com'
-      },
-      'secure.example.com' => {
-        'port' => 443,
-        'document_root' => '/var/www/secure.example.com',
-        'ssl_enabled' => true,
-        'ssl_cert' => '/etc/ssl/certs/secure.example.com.crt',
-        'ssl_key' => '/etc/ssl/private/secure.example.com.key'
-      }
-    }
-  }
-}
-```
+| Attribute | Default | Description |
+|-----------|---------|-------------|
+| `node['httpd']['ssl']['protocols']` | `TLSv1.2 TLSv1.3` | Supported TLS protocols |
+| `node['httpd']['ssl']['ciphers']` | Modern suite | SSL cipher suite |
+| `node['httpd']['ssl']['honor_cipher_order']` | `off` | Server cipher preference |
+| `node['httpd']['ssl']['hsts']['enabled']` | `true` | Enable HSTS header |
+| `node['httpd']['ssl']['hsts']['max_age']` | `63072000` | HSTS max-age (2 years) |
+| `node['httpd']['ssl']['ocsp_stapling']` | `true` | Enable OCSP stapling |
+| `node['httpd']['ssl']['letsencrypt']['enabled']` | `false` | Enable Let's Encrypt |
+| `node['httpd']['ssl']['letsencrypt']['contact']` | `nil` | Contact email |
+| `node['httpd']['ssl']['letsencrypt']['domains']` | `[]` | Domains for certificates |
 
 ## Testing
 
-This cookbook uses:
-
-- ChefSpec for unit testing
-- InSpec for integration testing
-- Test Kitchen for platform testing
-- GitHub Actions for CI/CD
+This cookbook uses comprehensive testing:
 
 ```bash
 # Run all tests
-delivery local all
+./bin/test-docker
 
 # Run unit tests
-chef exec rspec
+bundle exec rspec
 
 # Run integration tests
-kitchen test
+bundle exec kitchen test
+
+# Run linting
+bundle exec cookstyle
 ```
+
+### Test Kitchen
+
+```bash
+# List available test suites
+kitchen list
+
+# Run default suite
+kitchen test default-ubuntu-2204
+
+# Run SSL suite
+kitchen test ssl-ubuntu-2204
+```
+
+## Development
+
+### Prerequisites
+
+1. Install Docker and docker-compose
+2. Install Ruby 3.2+
+3. Install Bundler
+
+### Setup
+
+```bash
+./bin/setup-dev
+bundle install
+```
+
+### Running Tests Locally
+
+```bash
+# Unit tests
+bundle exec rspec
+
+# Integration tests (requires Docker)
+bundle exec kitchen test
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes with tests
+4. Submit a pull request
 
 ## License
 
