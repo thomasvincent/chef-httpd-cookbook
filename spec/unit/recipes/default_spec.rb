@@ -10,17 +10,20 @@ describe 'httpd::default' do
       expect { chef_run }.to_not raise_error
     end
 
-    it 'installs apache2 package' do
-      expect(chef_run).to install_package('apache2')
+    it 'includes the install recipe' do
+      expect(chef_run).to include_recipe('httpd::install')
     end
 
-    it 'enables and starts apache2 service' do
-      expect(chef_run).to enable_service('apache2')
-      expect(chef_run).to start_service('apache2')
+    it 'includes the configure recipe' do
+      expect(chef_run).to include_recipe('httpd::configure')
     end
 
-    it 'creates apache configuration directory' do
-      expect(chef_run).to create_directory('/etc/apache2/conf-available')
+    it 'includes the vhosts recipe' do
+      expect(chef_run).to include_recipe('httpd::vhosts')
+    end
+
+    it 'includes the service recipe' do
+      expect(chef_run).to include_recipe('httpd::service')
     end
   end
 
@@ -31,13 +34,8 @@ describe 'httpd::default' do
       expect { chef_run }.to_not raise_error
     end
 
-    it 'installs httpd package' do
-      expect(chef_run).to install_package('httpd')
-    end
-
-    it 'enables and starts httpd service' do
-      expect(chef_run).to enable_service('httpd')
-      expect(chef_run).to start_service('httpd')
+    it 'includes the install recipe' do
+      expect(chef_run).to include_recipe('httpd::install')
     end
   end
 
@@ -48,8 +46,8 @@ describe 'httpd::default' do
       expect { chef_run }.to_not raise_error
     end
 
-    it 'installs httpd package' do
-      expect(chef_run).to install_package('httpd')
+    it 'includes the install recipe' do
+      expect(chef_run).to include_recipe('httpd::install')
     end
   end
 end

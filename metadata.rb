@@ -24,6 +24,3 @@ supports 'freebsd', '>= 14.0'
 
 # macOS - Vagrant or local testable
 supports 'mac_os_x', '>= 13.0'
-
-# Dependencies for SSL/Let's Encrypt functionality
-depends 'acme', '~> 5.0'

@@ -79,9 +79,9 @@ template "#{ssl_conf_dir}/ssl-hardening.conf" do
     ssl_honor_cipher_order: node['httpd']['ssl']['honor_cipher_order'] || 'off',
     ssl_session_timeout: node['httpd']['ssl']['session_timeout'] || '1d',
     ssl_session_cache: node['httpd']['ssl']['session_cache'] || 'shmcb:/var/run/apache2/ssl_scache(512000)',
-    hsts_enabled: node['httpd']['ssl']['hsts']['enabled'] || true,
-    hsts_max_age: node['httpd']['ssl']['hsts']['max_age'] || 63_072_000,
-    ocsp_stapling: node['httpd']['ssl']['ocsp_stapling'] || true
+    hsts_enabled: node['httpd']['ssl']['hsts'] == true || (node['httpd']['ssl']['hsts'].is_a?(Hash) && node['httpd']['ssl']['hsts']['enabled']),
+    hsts_max_age: node['httpd']['ssl']['hsts_max_age'] || 63_072_000,
+    ocsp_stapling: node['httpd']['ssl']['ocsp_stapling'] != false
   )
   notifies :restart, "service[#{apache_service}]", :delayed
 end
@@ -96,7 +96,7 @@ execute 'a2enconf ssl-hardening' do
 end
 
 # Let's Encrypt / Certbot integration
-if node['httpd']['ssl']['letsencrypt']['enabled']
+if node['httpd']['ssl'].key?('letsencrypt') && node['httpd']['ssl']['letsencrypt']['enabled']
   # Install certbot packages
   package 'certbot' do
     action :install
