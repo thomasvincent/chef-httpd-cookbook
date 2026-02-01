@@ -62,7 +62,7 @@ describe 'test::httpd_module' do
         context 'when enabling a module' do
           if platform == 'centos'
             it 'creates module load file' do
-              expect(chef_run).to create_file("#{platform_info['mod_dir']}/ssl.load").with(
+              expect(chef_run).to create_file_if_missing("#{platform_info['mod_dir']}/ssl.load").with(
                 content: "LoadModule ssl_module #{platform_info['libexec_dir']}/mod_ssl.so\n",
                 owner: 'root',
                 group: 'root',

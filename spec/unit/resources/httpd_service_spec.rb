@@ -42,6 +42,11 @@ describe 'test::httpd_service' do
             runner.node.default['httpd']['mod_dir'] = '/etc/apache2/mods-enabled'
           end
 
+          # Stub systemd service file existence so overrides are created
+          allow(::File).to receive(:exist?).and_call_original
+          systemd_path = platform == 'centos' ? '/usr/lib/systemd/system/httpd.service' : '/lib/systemd/system/apache2.service'
+          allow(::File).to receive(:exist?).with(systemd_path).and_return(true)
+
           runner.converge('test::httpd_service')
         end
 

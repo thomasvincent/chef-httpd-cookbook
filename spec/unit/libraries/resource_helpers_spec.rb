@@ -4,17 +4,20 @@ require 'spec_helper'
 require_relative '../../../libraries/resource_helpers'
 
 describe Httpd::ResourceHelpers do
-  let(:chef_run) do
-    ChefSpec::SoloRunner.new(platform: 'ubuntu', version: '20.04') do |node|
-      node.default['httpd']['config']['group'] = 'www-data'
-    end
-  end
+  let(:node) { Chef::Node.new }
+  let(:run_context) { Chef::RunContext.new(node, {}, nil) }
 
   let(:subject) { Object.new.extend(Httpd::ResourceHelpers) }
 
+  let(:mock_template) do
+    Chef::Resource::Template.new('/etc/httpd/conf/httpd.conf', run_context).tap do |t|
+      t.source 'httpd.conf.erb'
+    end
+  end
+
   before do
     # Create a mock run_context
-    allow(subject).to receive(:run_context).and_return(chef_run.run_context)
+    allow(subject).to receive(:run_context).and_return(run_context)
 
     # Stub resources method
     allow(subject).to receive(:resources) do |arg|
@@ -22,20 +25,17 @@ describe Httpd::ResourceHelpers do
       resource_name = arg.values.first
 
       unless resource_key == :template && resource_name == '/etc/httpd/conf/httpd.conf'
-        raise Chef::Exceptions::ResourceNotFound.new(resource_key, resource_name)
+        raise Chef::Exceptions::ResourceNotFound
       end
 
-      # Return a mock template resource
-      template = Chef::Resource::Template.new('/etc/httpd/conf/httpd.conf', chef_run.run_context)
-      template.source 'httpd.conf.erb'
-      template
+      mock_template
     end
 
     # Stub declare_resource method
     allow(subject).to receive(:declare_resource) do |resource_type, resource_name|
       # Create a new resource of the requested type
       resource_class = Chef::Resource.const_get(resource_type.to_s.split('_').map(&:capitalize).join)
-      resource_class.new(resource_name, chef_run.run_context)
+      resource_class.new(resource_name, run_context)
     end
   end
 
@@ -53,6 +53,10 @@ describe Httpd::ResourceHelpers do
   end
 
   describe '#find_or_create_resource' do
+    before do
+      run_context.resource_collection.insert(mock_template)
+    end
+
     it 'returns the resource when it exists' do
       resource = subject.find_or_create_resource(:template, '/etc/httpd/conf/httpd.conf')
       expect(resource).to be_a(Chef::Resource::Template)
@@ -86,6 +90,8 @@ describe Httpd::ResourceHelpers do
   end
 
   describe '#get_template_resource' do
+    before { run_context.resource_collection.insert(mock_template) }
+
     it 'creates a template resource with the specified options' do
       resource = subject.get_template_resource('/etc/httpd/conf/custom.conf',
                                                cookbook: 'httpd',
@@ -108,24 +114,28 @@ describe Httpd::ResourceHelpers do
   end
 
   describe '#get_directory_resource' do
+    before { run_context.resource_collection.insert(mock_template) }
+
     it 'creates a directory resource with the specified options' do
       resource = subject.get_directory_resource('/etc/httpd/custom',
                                                 owner: 'apache',
                                                 group: 'apache',
                                                 mode: '0750',
                                                 recursive: false,
-                                                action: :create_if_missing)
+                                                action: :create)
 
       expect(resource).to be_a(Chef::Resource::Directory)
       expect(resource.owner).to eq('apache')
       expect(resource.group).to eq('apache')
       expect(resource.mode).to eq('0750')
       expect(resource.recursive).to eq(false)
-      expect(resource.action).to eq([:create_if_missing])
+      expect(resource.action).to eq([:create])
     end
   end
 
   describe '#get_file_resource' do
+    before { run_context.resource_collection.insert(mock_template) }
+
     it 'creates a file resource with the specified options' do
       resource = subject.get_file_resource('/etc/httpd/conf/custom.conf',
                                            content: 'Configuration content',
@@ -146,6 +156,8 @@ describe Httpd::ResourceHelpers do
   end
 
   describe '#create_resources' do
+    before { run_context.resource_collection.insert(mock_template) }
+
     it 'creates multiple resources of the same type with specified options' do
       resources_hash = {
         '/etc/httpd/conf/site1.conf' => {

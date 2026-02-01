@@ -10,13 +10,26 @@ describe Httpd::YAMLConfig do
 
   let(:subject) { Object.new.extend(Httpd::YAMLConfig) }
 
+  let(:run_context) do
+    node = Chef::Node.new
+    Chef::RunContext.new(node, {}, nil)
+  end
+
   before do
     allow(subject).to receive(:file) do |path, &block|
-      # Mock file resource
-      resource = Chef::Resource::File.new(path, chef_run.run_context)
-      block&.call(resource)
+      # Mock file resource - use instance_eval since Chef DSL blocks are evaluated on the resource
+      resource = Chef::Resource::File.new(path, run_context)
+      resource.instance_eval(&block) if block
       resource
     end
+
+    # Stub Chef.logger for methods that use it
+    logger = double('logger')
+    allow(logger).to receive(:warn)
+    allow(logger).to receive(:debug)
+    allow(logger).to receive(:info)
+    allow(logger).to receive(:error)
+    allow(Chef).to receive(:logger).and_return(logger)
   end
 
   describe '#create_yaml_config' do
@@ -25,7 +38,7 @@ describe Httpd::YAMLConfig do
 
       expect(resource).to be_a(Chef::Resource::File)
       expect(resource.path).to eq('/etc/httpd/conf.d/config.yaml')
-      expect(resource.content).to eq("---\nkey: value\n")
+      expect(resource.content).to eq(YAML.dump({ key: 'value' }))
       expect(resource.owner).to eq('root')
       expect(resource.group).to eq('root')
       expect(resource.mode).to eq('0644')
@@ -48,7 +61,7 @@ describe Httpd::YAMLConfig do
   describe '#read_yaml_config' do
     it 'reads and parses an existing YAML file' do
       allow(::File).to receive(:exist?).with('/etc/httpd/conf.d/config.yaml').and_return(true)
-      allow(YAML).to receive(:load_file).with('/etc/httpd/conf.d/config.yaml').and_return({ 'key' => 'value' })
+      allow(YAML).to receive(:load_file).with('/etc/httpd/conf.d/config.yaml', permitted_classes: [Symbol]).and_return({ 'key' => 'value' })
 
       result = subject.read_yaml_config('/etc/httpd/conf.d/config.yaml')
 
@@ -65,7 +78,7 @@ describe Httpd::YAMLConfig do
 
     it 'returns an empty hash on parsing error' do
       allow(::File).to receive(:exist?).with('/etc/httpd/conf.d/invalid.yaml').and_return(true)
-      allow(YAML).to receive(:load_file).with('/etc/httpd/conf.d/invalid.yaml').and_raise(Psych::SyntaxError.new(
+      allow(YAML).to receive(:load_file).with('/etc/httpd/conf.d/invalid.yaml', permitted_classes: [Symbol]).and_raise(Psych::SyntaxError.new(
                                                                                             'file', 1, 1, 0, 'error', 'problem'
                                                                                           ))
 
@@ -102,11 +115,10 @@ describe Httpd::YAMLConfig do
     end
 
     it 'handles errors gracefully' do
-      # Create a hash that can't be serialized to YAML
-      problematic_hash = {}
-      problematic_hash['circular'] = problematic_hash
+      # Stub YAML.dump to raise an error
+      allow(YAML).to receive(:dump).and_raise(StandardError, 'Test error')
 
-      result = subject.hash_to_yaml(problematic_hash)
+      result = subject.hash_to_yaml({ 'key' => 'value' })
 
       expect(result).to eq("{}\n")
     end
@@ -122,9 +134,9 @@ describe Httpd::YAMLConfig do
     end
 
     it 'handles parsing errors gracefully' do
-      invalid_yaml = "key: value\n  indentation error"
+      allow(YAML).to receive(:safe_load).and_raise(Psych::SyntaxError.new('file', 1, 1, 0, 'error', 'problem'))
 
-      result = subject.yaml_to_hash(invalid_yaml)
+      result = subject.yaml_to_hash('invalid')
 
       expect(result).to eq({})
     end

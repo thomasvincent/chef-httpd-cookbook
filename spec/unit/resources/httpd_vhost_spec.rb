@@ -23,6 +23,11 @@ describe 'test::httpd_vhost' do
   platforms.each do |platform, platform_info|
     platform_info['versions'].each do |version|
       context "on #{platform} #{version}" do
+        before do
+          allow(::File).to receive(:exist?).and_call_original
+          allow(::File).to receive(:exist?).with("#{platform_info['conf_enabled_dir']}/20-disabled.com.conf").and_return(true)
+        end
+
         let(:chef_run) do
           runner = ChefSpec::SoloRunner.new(
             step_into: ['httpd_vhost'],
