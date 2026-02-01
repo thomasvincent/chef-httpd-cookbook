@@ -6,7 +6,7 @@ require 'chefspec'
 fixtures_path = File.expand_path('fixtures/cookbooks', __dir__)
 cookbook_root = File.expand_path('..', __dir__)
 httpd_link = File.join(fixtures_path, 'httpd')
-FileUtils.ln_s(cookbook_root, httpd_link) unless File.exist?(httpd_link)
+FileUtils.ln_sf(cookbook_root, httpd_link) unless File.symlink?(httpd_link) && File.readlink(httpd_link) == cookbook_root
 
 RSpec.configure do |c|
   c.cookbook_path = [fixtures_path]
