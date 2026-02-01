@@ -23,7 +23,7 @@ group :test do
   gem 'rspec_junit_formatter', '~> 0.6'
   gem 'simplecov', '~> 0.22'
   gem 'simplecov-console', '~> 0.9'
-  gem 'test-kitchen', '~> 3.7'
+  gem 'test-kitchen', '~> 4.0'
 end
 
 group :docs do
