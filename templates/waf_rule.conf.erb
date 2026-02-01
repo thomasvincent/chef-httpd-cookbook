@@ -1,0 +1,9 @@
+# Custom WAF Rule: <%= @rule_name %>
+# Managed by Chef - DO NOT EDIT MANUALLY
+
+<% if @enabled -%>
+<%= @rule_content %>
+<% else -%>
+# Rule disabled
+# <%= @rule_content.gsub("\n", "\n# ") %>
+<% end -%>

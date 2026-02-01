@@ -34,7 +34,7 @@ module Httpd
     # Check if Apache has built-in Prometheus exporter module
     # @return [Boolean] True if module is available, false otherwise
     def apache_has_prometheus_module?
-      if node['platform_family'] == 'debian'
+      if platform_family?('debian')
         ::File.exist?('/usr/lib/apache2/modules/mod_prometheus_exporter.so') ||
           ::File.exist?('/usr/lib/apache2/modules/mod_prometheus.so')
       else
@@ -100,9 +100,9 @@ module Httpd
     # @return [Boolean] True if configured successfully, false otherwise
     def configure_external_prometheus_exporter(_module_path, scrape_uri, telemetry_path, _metrics)
       # Install prometheus-apache-exporter package or binary
-      package_name = if node['platform_family'] == 'debian'
+      package_name = if platform_family?('debian')
                        'prometheus-apache-exporter'
-                     elsif node['platform_family'] == 'rhel'
+                     elsif platform_family?('rhel')
                        'prometheus-apache-exporter'
                      end
 
@@ -292,7 +292,7 @@ module Httpd
 
       # Save dashboard JSON to file
       dashboard_path = '/etc/httpd/grafana-dashboard.json'
-      dashboard_path = '/etc/apache2/grafana-dashboard.json' if node['platform_family'] == 'debian'
+      dashboard_path = '/etc/apache2/grafana-dashboard.json' if platform_family?('debian')
 
       file dashboard_path do
         content JSON.pretty_generate(dashboard_json)

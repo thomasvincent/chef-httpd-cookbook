@@ -133,7 +133,7 @@ module Httpd
         end
 
         # Validate configuration
-        validate_cmd = node['platform_family'] == 'debian' ? 'apache2ctl -t' : 'httpd -t'
+        validate_cmd = platform_family?('debian') ? 'apache2ctl -t' : 'httpd -t'
         cmd = shell_out(validate_cmd)
 
         unless cmd.exitstatus.zero?
@@ -212,7 +212,7 @@ module Httpd
       end
 
       # Validate the inactive environment configuration
-      validate_cmd = if node['platform_family'] == 'debian'
+      validate_cmd = if platform_family?('debian')
                        "APACHE_CONFDIR=#{inactive_dir} apache2ctl -t"
                      else
                        "httpd -t -c \"ServerRoot #{inactive_dir}\""
@@ -282,7 +282,7 @@ module Httpd
     # Get the current Apache version
     # @return [String] Apache version string
     def apache_version
-      cmd = if node['platform_family'] == 'debian'
+      cmd = if platform_family?('debian')
               shell_out('apache2 -v')
             else
               shell_out('httpd -v')
