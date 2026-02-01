@@ -1,0 +1,76 @@
+# ModSecurity Main Configuration
+# Managed by Chef - DO NOT EDIT MANUALLY
+
+# Rule engine mode
+# On - Block attacks
+# DetectionOnly - Log but don't block
+SecRuleEngine <%= @mode %>
+
+# Request body handling
+<% if @request_body_enabled -%>
+SecRequestBodyAccess On
+SecRequestBodyLimit <%= @request_body_limit %>
+SecRequestBodyNoFilesLimit <%= @request_body_no_files_limit %>
+SecRequestBodyLimitAction <%= @request_body_limit_action %>
+<% else -%>
+SecRequestBodyAccess Off
+<% end -%>
+
+# Response body handling
+<% if @response_body_enabled -%>
+SecResponseBodyAccess On
+SecResponseBodyLimit <%= @response_body_limit %>
+SecResponseBodyLimitAction <%= @response_body_limit_action %>
+SecResponseBodyMimeType <%= @response_body_mime_types.join(' ') %>
+<% else -%>
+SecResponseBodyAccess Off
+<% end -%>
+
+# Temporary directory for file uploads
+SecTmpDir /tmp/
+SecDataDir /tmp/
+
+# Audit log configuration
+<% if @audit_log_enabled -%>
+SecAuditEngine <%= @audit_log_relevant_only ? 'RelevantOnly' : 'On' %>
+SecAuditLogType <%= @audit_log_type %>
+SecAuditLog <%= @audit_log_path %>
+SecAuditLogParts <%= @audit_log_parts %>
+SecAuditLogRelevantStatus "^(?:5|4(?!04))"
+<% else -%>
+SecAuditEngine Off
+<% end -%>
+
+# Debug log (disabled by default)
+SecDebugLog /var/log/modsecurity/debug.log
+SecDebugLogLevel 0
+
+# Arguments separator
+SecArgumentSeparator &
+
+# Cookie format (version 0 = Netscape)
+SecCookieFormat 0
+
+# Unicode mapping
+SecUnicodeMapFile /etc/modsecurity/unicode.mapping 20127
+
+# Upload directory
+SecUploadDir /tmp/
+SecUploadKeepFiles Off
+
+# PCRE match limits
+SecPcreMatchLimit 100000
+SecPcreMatchLimitRecursion 100000
+
+# Status engine (for debugging)
+SecStatusEngine On
+
+# Collection timeout
+SecCollectionTimeout 600
+
+# Hash engine (for detecting request splitting attacks)
+SecHashEngine On
+SecHashMethodRx HashHref "href=|src=|action="
+SecHashMethodPm HashHref "href" "src" "action"
+SecHashParam "hmac"
+SecHashKey rand keyOnly

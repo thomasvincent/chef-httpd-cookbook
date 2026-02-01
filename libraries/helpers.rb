@@ -103,6 +103,12 @@ module Httpd
       elsif platform_family?('arch')
         # Arch uses NAME.conf in conf.d
         "#{module_name}.conf"
+      elsif platform_family?('freebsd')
+        # FreeBSD uses NAME.conf in modules.d
+        "#{module_name}.conf"
+      elsif platform_family?('mac_os_x')
+        # macOS uses NAME.conf in extra
+        "#{module_name}.conf"
       else
         "#{module_name}.conf"
       end
@@ -158,6 +164,10 @@ module Httpd
         '/etc/apache2/httpd.conf'
       elsif platform_family?('arch')
         '/etc/httpd/conf/httpd.conf'
+      elsif platform_family?('freebsd')
+        '/usr/local/etc/apache24/httpd.conf'
+      elsif platform_family?('mac_os_x')
+        '/opt/homebrew/etc/httpd/httpd.conf'
       else
         '/etc/httpd/conf/httpd.conf'
       end
@@ -206,6 +216,10 @@ module Httpd
       elsif platform_family?('suse')
         'apache2'
       elsif platform_family?('arch')
+        'httpd'
+      elsif platform_family?('freebsd')
+        'apache24'
+      elsif platform_family?('mac_os_x')
         'httpd'
       else
         'httpd'

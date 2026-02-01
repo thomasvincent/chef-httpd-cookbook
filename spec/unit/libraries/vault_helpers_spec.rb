@@ -13,19 +13,17 @@ describe Httpd::VaultHelpers do
   end
 
   before do
-    # Stub Chef::EncryptedDataBagItem.load
-    allow(Chef::EncryptedDataBagItem).to receive(:load).with('ssl_certificates', 'test_cert').and_return({
-                                                                                                           'cert' => '-----BEGIN CERTIFICATE-----\nMIIDXTCCAkWgAwIBAgIJAJC1HiIAZAiIMA==\n-----END CERTIFICATE-----',
-                                                                                                           'key' => '-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDHZB\n-----END PRIVATE KEY-----',
-                                                                                                           'chain' => '-----BEGIN CERTIFICATE-----\nMIIDXTCCAkWgAwIBBBBJAJC1HiIAZAiIMA==\n-----END CERTIFICATE-----',
-                                                                                                         })
+    test_cert_data = {
+      'cert' => '-----BEGIN CERTIFICATE-----\nMIIDXTCCAkWgAwIBAgIJAJC1HiIAZAiIMA==\n-----END CERTIFICATE-----',
+      'key' => '-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDHZB\n-----END PRIVATE KEY-----',
+      'chain' => '-----BEGIN CERTIFICATE-----\nMIIDXTCCAkWgAwIBBBBJAJC1HiIAZAiIMA==\n-----END CERTIFICATE-----',
+    }
 
-    # Stub empty return for non-existent item
-    allow(Chef::EncryptedDataBagItem).to receive(:load).with('ssl_certificates',
-                                                             'missing_cert').and_raise(Net::HTTPClientException.new('404 Not Found',
-                                                                                                                    Net::HTTPNotFound.new(
-                                                                                                                      '1.1', '404', 'Not Found'
-                                                                                                                    )))
+    # Stub data_bag_item which is what the library actually calls
+    allow(self).to receive(:data_bag_item).with('ssl_certificates', 'test_cert').and_return(test_cert_data)
+    allow(self).to receive(:data_bag_item).with('ssl_certificates', 'missing_cert').and_raise(
+      StandardError, '404 Not Found'
+    )
   end
 
   context '#get_vault_data' do

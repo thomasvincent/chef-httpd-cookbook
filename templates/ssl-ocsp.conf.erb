@@ -1,0 +1,9 @@
+# OCSP Stapling for <%= @domain %>
+# Managed by Chef - DO NOT EDIT MANUALLY
+
+<IfModule mod_ssl.c>
+    # Enable OCSP stapling for this domain
+    <If "%{SERVER_NAME} == '<%= @domain %>'">
+        SSLUseStapling On
+    </If>
+</IfModule>

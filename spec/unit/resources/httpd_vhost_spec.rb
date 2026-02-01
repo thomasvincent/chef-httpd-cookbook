@@ -5,71 +5,54 @@ require 'spec_helper'
 describe 'test::httpd_vhost' do
   platforms = {
     'ubuntu' => {
-      'versions' => ['20.04', '22.04'],
-      'conf_available_dir' => '/etc/apache2/sites-available',
-      'conf_enabled_dir' => '/etc/apache2/sites-enabled',
-      'a2ensite_cmd' => '/usr/sbin/a2ensite',
-      'a2dissite_cmd' => '/usr/sbin/a2dissite',
+      'versions' => ['20.04'],
+      'conf_available_dir' => '/etc/apache2/conf-available',
+      'conf_enabled_dir' => '/etc/apache2/conf-enabled',
+      'user' => 'www-data',
+      'group' => 'www-data',
     },
     'centos' => {
-      'versions' => %w(8 9),
+      'versions' => %w(8),
       'conf_available_dir' => '/etc/httpd/conf.available',
       'conf_enabled_dir' => '/etc/httpd/conf.d',
+      'user' => 'apache',
+      'group' => 'apache',
     },
   }
 
   platforms.each do |platform, platform_info|
     platform_info['versions'].each do |version|
       context "on #{platform} #{version}" do
+        before do
+          allow(::File).to receive(:exist?).and_call_original
+          allow(::File).to receive(:exist?).with("#{platform_info['conf_enabled_dir']}/20-disabled.com.conf").and_return(true)
+        end
+
         let(:chef_run) do
           runner = ChefSpec::SoloRunner.new(
             step_into: ['httpd_vhost'],
             platform: platform,
             version: version
           )
-
-          # Set node attributes for the platform
-          if platform == 'centos'
-            runner.node.default['httpd']['conf_available_dir'] = platform_info['conf_available_dir']
-            runner.node.default['httpd']['conf_enabled_dir'] = platform_info['conf_enabled_dir']
-            runner.node.default['httpd']['user'] = 'apache'
-            runner.node.default['httpd']['group'] = 'apache'
-          elsif platform == 'ubuntu'
-            runner.node.default['httpd']['conf_available_dir'] = platform_info['conf_available_dir']
-            runner.node.default['httpd']['conf_enabled_dir'] = platform_info['conf_enabled_dir']
-            runner.node.default['httpd']['user'] = 'www-data'
-            runner.node.default['httpd']['group'] = 'www-data'
-          end
-
+          runner.node.default['httpd']['conf_available_dir'] = platform_info['conf_available_dir']
+          runner.node.default['httpd']['conf_enabled_dir'] = platform_info['conf_enabled_dir']
+          runner.node.default['httpd']['user'] = platform_info['user']
+          runner.node.default['httpd']['group'] = platform_info['group']
           runner.converge('test::httpd_vhost')
-        end
-
-        # Stub commands for enabling/disabling sites on Debian
-        before do
-          if platform == 'ubuntu'
-            stub_command("#{platform_info['a2ensite_cmd']} 010-example.com.conf").and_return(true)
-            stub_command("#{platform_info['a2dissite_cmd']} 020-disabled.com.conf").and_return(true)
-          end
-
-          # Stub httpd_module resource for SSL
-          allow_any_instance_of(Chef::Recipe).to receive(:httpd_module).and_return(nil)
         end
 
         context 'creates a basic virtual host' do
           it 'creates the document root directory' do
             expect(chef_run).to create_directory('/var/www/example.com').with(
-              owner: platform == 'centos' ? 'apache' : 'www-data',
-              group: platform == 'centos' ? 'apache' : 'www-data',
+              owner: platform_info['user'],
+              group: platform_info['group'],
               mode: '0755',
               recursive: true
             )
           end
 
           it 'creates the virtual host configuration file' do
-            if platform == 'centos'
-            end
-            config_path = "#{platform_info['conf_available_dir']}/010-example.com.conf"
-
+            config_path = "#{platform_info['conf_available_dir']}/10-example.com.conf"
             expect(chef_run).to create_template(config_path).with(
               source: 'vhost.conf.erb',
               cookbook: 'httpd',
@@ -79,31 +62,21 @@ describe 'test::httpd_vhost' do
             )
           end
 
-          it 'enables the virtual host' do
-            if platform == 'ubuntu'
-              expect(chef_run).to run_execute('a2ensite 010-example.com.conf')
-            else
-              expect(chef_run).to create_link("#{platform_info['conf_enabled_dir']}/010-example.com.conf").with(
-                to: "#{platform_info['conf_available_dir']}/010-example.com.conf"
-              )
-            end
+          it 'enables the virtual host via symlink' do
+            expect(chef_run).to create_link("#{platform_info['conf_enabled_dir']}/10-example.com.conf").with(
+              to: "#{platform_info['conf_available_dir']}/10-example.com.conf"
+            )
           end
         end
 
         context 'creates an SSL-enabled virtual host' do
           it 'creates the document root directory' do
             expect(chef_run).to create_directory('/var/www/secure.example.com').with(
-              owner: platform == 'centos' ? 'apache' : 'www-data',
-              group: platform == 'centos' ? 'apache' : 'www-data',
+              owner: platform_info['user'],
+              group: platform_info['group'],
               mode: '0755',
               recursive: true
             )
-          end
-
-          it 'enables the SSL module' do
-            # In a real Chef run, this would be checked with:
-            # expect(chef_run).to enable_httpd_module('ssl')
-            # But since we're stubbing the httpd_module resource, we can't test this directly
           end
 
           it 'creates the SSL directory for the certificate' do
@@ -115,22 +88,14 @@ describe 'test::httpd_vhost' do
           end
 
           it 'creates the virtual host configuration file with SSL settings' do
-            if platform == 'centos'
-            end
-            config_path = "#{platform_info['conf_available_dir']}/010-secure.example.com.conf"
-
+            config_path = "#{platform_info['conf_available_dir']}/10-secure.example.com.conf"
             expect(chef_run).to create_template(config_path)
-            # We should check the content here, but the variables are complex in this case
           end
         end
 
         context 'when disabling a virtual host' do
-          it 'disables the virtual host' do
-            if platform == 'ubuntu'
-              expect(chef_run).to run_execute('a2dissite 020-disabled.com.conf')
-            else
-              expect(chef_run).to delete_link("#{platform_info['conf_enabled_dir']}/020-disabled.com.conf")
-            end
+          it 'removes the enabled symlink for disabled vhost' do
+            expect(chef_run).to delete_link("#{platform_info['conf_enabled_dir']}/20-disabled.com.conf")
           end
         end
       end

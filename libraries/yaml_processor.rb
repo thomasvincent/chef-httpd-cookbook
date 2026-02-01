@@ -133,7 +133,8 @@ module Httpd
             result << "  #{key} #{value}"
           end
         end
-        result << "</#{section[1..-2]}>"
+        tag_name = section[1..-2].split(/\s+/, 2).first
+        result << "</#{tag_name}>"
       else
         # This is a simple directive
         config.each do |key, value|

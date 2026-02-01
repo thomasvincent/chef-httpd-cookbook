@@ -1,6 +1,16 @@
 # frozen_string_literal: true
 
 require 'chefspec'
+
+# Set cookbook paths - create symlink for proper name resolution
+fixtures_path = File.expand_path('fixtures/cookbooks', __dir__)
+cookbook_root = File.expand_path('..', __dir__)
+httpd_link = File.join(fixtures_path, 'httpd')
+FileUtils.ln_s(cookbook_root, httpd_link) unless File.exist?(httpd_link)
+
+RSpec.configure do |c|
+  c.cookbook_path = [fixtures_path]
+end
 require 'simplecov'
 
 # Start SimpleCov

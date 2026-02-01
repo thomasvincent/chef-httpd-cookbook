@@ -2,6 +2,22 @@
 
 module Httpd
   module YAMLConfig
+    # Native deep merge implementation (replaces deprecated Chef::Mixin::DeepMerge)
+    # @param source [Hash] The source hash to merge from
+    # @param target [Hash] The target hash to merge into
+    # @return [Hash] The merged hash
+    def deep_merge_hash(source, target)
+      target = target.dup
+      source.each do |key, value|
+        target[key] = if value.is_a?(Hash) && target[key].is_a?(Hash)
+                        deep_merge_hash(value, target[key])
+                      else
+                        value
+                      end
+      end
+      target
+    end
+
     # Process a YAML configuration file with Chef 18+ style handling
     # @param file_path [String] The path to write the YAML file
     # @param config [Hash] The configuration hash to write as YAML
@@ -29,13 +45,13 @@ module Httpd
 
       if ::File.exist?(file_path)
         begin
-          YAML.load_file(file_path) || {}
+          YAML.load_file(file_path, permitted_classes: [Symbol]) || {}
         rescue StandardError => e
-          Chef::Log.warn("Error parsing YAML file #{file_path}: #{e.message}")
+          Chef.logger.warn("Error parsing YAML file #{file_path}: #{e.message}")
           {}
         end
       else
-        Chef::Log.debug("YAML file not found: #{file_path}")
+        Chef.logger.debug("YAML file not found: #{file_path}")
         {}
       end
     end
@@ -49,10 +65,9 @@ module Httpd
     # @return [Chef::Resource] The file resource
     def merge_yaml_config(file_path, new_config, owner: 'root', group: 'root', mode: '0644')
       require 'yaml'
-      require 'chef/mixin/deep_merge'
 
       existing_config = read_yaml_config(file_path)
-      merged_config = Chef::Mixin::DeepMerge.deep_merge(new_config, existing_config)
+      merged_config = deep_merge_hash(new_config, existing_config)
 
       file file_path do
         content YAML.dump(merged_config)
@@ -72,7 +87,7 @@ module Httpd
       begin
         YAML.dump(hash)
       rescue StandardError => e
-        Chef::Log.warn("Error converting hash to YAML: #{e.message}")
+        Chef.logger.warn("Error converting hash to YAML: #{e.message}")
         "{}\n" # Return empty YAML object on error
       end
     end
@@ -84,9 +99,9 @@ module Httpd
       require 'yaml'
 
       begin
-        YAML.safe_load(yaml_string) || {}
+        YAML.safe_load(yaml_string, permitted_classes: [Symbol]) || {}
       rescue StandardError => e
-        Chef::Log.warn("Error parsing YAML string: #{e.message}")
+        Chef.logger.warn("Error parsing YAML string: #{e.message}")
         {} # Return empty hash on error
       end
     end

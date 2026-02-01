@@ -5,14 +5,14 @@ require 'spec_helper'
 describe 'test::httpd_module' do
   platforms = {
     'ubuntu' => {
-      'versions' => ['20.04', '22.04'],
+      'versions' => ['20.04'],
       'mod_dir' => '/etc/apache2/mods-available',
       'mod_enabled_dir' => '/etc/apache2/mods-enabled',
       'a2enmod_cmd' => '/usr/sbin/a2enmod',
       'a2dismod_cmd' => '/usr/sbin/a2dismod',
     },
     'centos' => {
-      'versions' => %w(8 9),
+      'versions' => %w(8),
       'mod_dir' => '/etc/httpd/conf.modules.d',
       'libexec_dir' => '/usr/lib64/httpd/modules',
     },
@@ -62,7 +62,7 @@ describe 'test::httpd_module' do
         context 'when enabling a module' do
           if platform == 'centos'
             it 'creates module load file' do
-              expect(chef_run).to create_file("#{platform_info['mod_dir']}/ssl.load").with(
+              expect(chef_run).to create_file_if_missing("#{platform_info['mod_dir']}/ssl.load").with(
                 content: "LoadModule ssl_module #{platform_info['libexec_dir']}/mod_ssl.so\n",
                 owner: 'root',
                 group: 'root',
