@@ -16,7 +16,6 @@ case node['platform_family']
 when 'debian'
   apache_service = 'apache2'
   ssl_conf_dir = '/etc/apache2/conf-available'
-  ssl_enabled_dir = '/etc/apache2/conf-enabled'
   ssl_module_pkg = 'openssl'
   certbot_apache_pkg = 'python3-certbot-apache'
   enable_ssl_cmd = 'a2enmod ssl'
@@ -24,7 +23,6 @@ when 'debian'
 when 'rhel', 'fedora', 'amazon'
   apache_service = 'httpd'
   ssl_conf_dir = '/etc/httpd/conf.d'
-  ssl_enabled_dir = nil
   ssl_module_pkg = 'mod_ssl'
   certbot_apache_pkg = 'python3-certbot-apache'
   enable_ssl_cmd = nil
@@ -32,7 +30,6 @@ when 'rhel', 'fedora', 'amazon'
 else
   apache_service = 'httpd'
   ssl_conf_dir = '/etc/httpd/conf.d'
-  ssl_enabled_dir = nil
   ssl_module_pkg = 'mod_ssl'
   certbot_apache_pkg = 'certbot-apache'
   enable_ssl_cmd = nil
@@ -47,7 +44,7 @@ end
 # Enable SSL module on Debian-based systems
 execute 'a2enmod ssl' do
   command enable_ssl_cmd
-  only_if { node['platform_family'] == 'debian' }
+  only_if { platform_family?('debian') }
   not_if { ::File.exist?('/etc/apache2/mods-enabled/ssl.load') }
   notifies :restart, "service[#{apache_service}]", :delayed
 end
@@ -58,7 +55,7 @@ directory '/etc/apache2/ssl' do
   group 'root'
   mode '0750'
   recursive true
-  only_if { node['platform_family'] == 'debian' }
+  only_if { platform_family?('debian') }
 end
 
 directory '/etc/httpd/ssl' do
@@ -66,7 +63,7 @@ directory '/etc/httpd/ssl' do
   group 'root'
   mode '0750'
   recursive true
-  only_if { node['platform_family'] != 'debian' }
+  not_if { platform_family?('debian') }
 end
 
 # Create SSL hardening configuration with modern cipher suites
@@ -92,7 +89,7 @@ end
 # Enable SSL hardening configuration on Debian-based systems
 execute 'a2enconf ssl-hardening' do
   command enable_conf_cmd
-  only_if { node['platform_family'] == 'debian' }
+  only_if { platform_family?('debian') }
   only_if { enable_conf_cmd }
   not_if { ::File.exist?('/etc/apache2/conf-enabled/ssl-hardening.conf') }
   notifies :restart, "service[#{apache_service}]", :delayed
