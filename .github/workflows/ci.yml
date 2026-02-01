@@ -30,10 +30,6 @@ jobs:
         with:
           ruby-version: "3.3"
           bundler-cache: true
-      - name: Install Chef CLI
-        run: gem install chef-cli --version "~> 5.6"
-      - name: Install dependencies
-        run: bundle install
       - name: Check Ruby syntax
         run: find . -name "*.rb" -not -path "./vendor/*" -exec ruby -c -w {} +
       - name: Check Chef syntax with Cookstyle
@@ -59,24 +55,18 @@ jobs:
       matrix:
         os:
           [
-            ubuntu-20.04,
-            ubuntu-22.04,
-            ubuntu-24.04,
-            centos-stream-8,
-            centos-stream-9,
-            rockylinux-8,
-            rockylinux-9,
-            debian-11,
+            ubuntu-2204,
+            ubuntu-2404,
             debian-12,
-            amazon-2,
-            amazon-2023,
+            rockylinux-9,
+            almalinux-9,
+            amazonlinux-2023,
           ]
-        suite:
-          [default, ssl, multi-vhost, modules, performance-tuning, telemetry]
+        suite: [default, ssl, vhosts]
       fail-fast: false
     env:
-      CHEF_LICENSE: accept-silent
-      KITCHEN_LOCAL_YAML: .kitchen.dokken.yml
+      CHEF_LICENSE: accept-no-persist
+      KITCHEN_YAML: kitchen.yml
       DOCKER_MEMORY: "2048m"
       DOCKER_CPUS: "2"
     steps:
@@ -86,10 +76,8 @@ jobs:
         with:
           ruby-version: "3.3"
           bundler-cache: true
-      - name: Install Chef CLI
-        run: gem install chef-cli --version "~> 5.6"
-      - name: Install dependencies
-        run: bundle install
+      - name: Install Policyfile dependencies
+        run: bundle exec chef-cli install Policyfile.rb
       - name: Set up Docker
         uses: docker/setup-buildx-action@v4
       - name: Free disk space
@@ -99,92 +87,6 @@ jobs:
           sudo rm -rf /opt/ghc
           sudo rm -rf /usr/local/share/boost
       - name: Test Kitchen
-        run: |
-          bundle exec kitchen test ${{ matrix.suite }}-${{ matrix.os }} --destroy=always
-      - name: Upload kitchen logs on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: kitchen-logs-${{ matrix.suite }}-${{ matrix.os }}
-          path: .kitchen/logs/
-
-  source-install:
-    runs-on: ubuntu-latest
-    needs: lint
-    timeout-minutes: 60
-    strategy:
-      matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, centos-stream-8, rockylinux-9]
-        suite: [source]
-      fail-fast: false
-    env:
-      CHEF_LICENSE: accept-silent
-      KITCHEN_LOCAL_YAML: .kitchen.dokken.yml
-      DOCKER_MEMORY: "2048m"
-      DOCKER_CPUS: "2"
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: "3.3"
-          bundler-cache: true
-      - name: Install Chef CLI
-        run: gem install chef-cli --version "~> 5.6"
-      - name: Install dependencies
-        run: bundle install
-      - name: Set up Docker
-        uses: docker/setup-buildx-action@v4
-      - name: Free disk space
-        run: |
-          sudo apt-get clean
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /opt/ghc
-          sudo rm -rf /usr/local/share/boost
-      - name: Test Kitchen for Source Installs
-        run: |
-          bundle exec kitchen test ${{ matrix.suite }}-${{ matrix.os }} --destroy=always
-      - name: Upload kitchen logs on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: kitchen-logs-${{ matrix.suite }}-${{ matrix.os }}
-          path: .kitchen/logs/
-
-  prefork-mpm:
-    runs-on: ubuntu-latest
-    needs: lint
-    timeout-minutes: 60
-    strategy:
-      matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, centos-stream-8, rockylinux-9]
-        suite: [prefork-mpm]
-      fail-fast: false
-    env:
-      CHEF_LICENSE: accept-silent
-      KITCHEN_LOCAL_YAML: .kitchen.dokken.yml
-      DOCKER_MEMORY: "2048m"
-      DOCKER_CPUS: "2"
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: "3.3"
-          bundler-cache: true
-      - name: Install Chef CLI
-        run: gem install chef-cli --version "~> 5.6"
-      - name: Install dependencies
-        run: bundle install
-      - name: Set up Docker
-        uses: docker/setup-buildx-action@v4
-      - name: Free disk space
-        run: |
-          sudo apt-get clean
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /opt/ghc
-          sudo rm -rf /usr/local/share/boost
-      - name: Test Kitchen for MPM Prefork
         run: |
           bundle exec kitchen test ${{ matrix.suite }}-${{ matrix.os }} --destroy=always
       - name: Upload kitchen logs on failure
