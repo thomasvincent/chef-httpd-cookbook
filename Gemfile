@@ -3,6 +3,7 @@
 source 'https://rubygems.org'
 
 gem 'chef', '~> 18.0'
+gem 'chef-cli', '~> 5.6'
 gem 'chefspec', '~> 9.3'
 gem 'cookstyle', '~> 8.1'
 
