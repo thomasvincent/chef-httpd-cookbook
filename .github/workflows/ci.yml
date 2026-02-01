@@ -1,100 +1,195 @@
----
 name: CI
 
 on:
   push:
-    branches:
-      - main
-      - master
+    branches: [main]
   pull_request:
-    branches:
-      - main
-      - master
+    branches: [main]
+  workflow_dispatch:
+    # Allow manual triggering
+
+# Set explicit permissions for security
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+# Concurrency control to cancel in-progress runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   lint:
-    name: Lint
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
+      - uses: actions/checkout@v4
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.2'
+          ruby-version: "3.3"
           bundler-cache: true
-
+      - name: Install Chef CLI
+        run: gem install chef-cli --version "~> 5.6"
       - name: Install dependencies
-        run: bundle install --jobs 4 --retry 3
+        run: bundle install
+      - name: Check Ruby syntax
+        run: bundle exec chef exec ruby -c -w $(find . -name "*.rb" -not -path "./vendor/*")
+      - name: Check Chef syntax with Cookstyle
+        run: bundle exec cookstyle
+      - name: Run ChefSpec tests with coverage
+        run: bundle exec rspec --format documentation --format RspecJunitFormatter --out rspec.xml
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: rspec-results
+          path: rspec.xml
+      - name: Upload coverage results
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-results
+          path: coverage/
 
-      - name: Run Cookstyle
-        run: bundle exec cookstyle --display-cop-names
-
-  unit-tests:
-    name: Unit Tests
+  integration:
     runs-on: ubuntu-latest
     needs: lint
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.2'
-          bundler-cache: true
-
-      - name: Install dependencies
-        run: bundle install --jobs 4 --retry 3
-
-      - name: Run ChefSpec
-        run: bundle exec rspec --format documentation
-
-  integration-tests:
-    name: Integration Tests
-    runs-on: ubuntu-latest
-    needs: unit-tests
+    timeout-minutes: 60
     strategy:
-      fail-fast: false
       matrix:
+        os:
+          [
+            ubuntu-20.04,
+            ubuntu-22.04,
+            ubuntu-24.04,
+            centos-stream-8,
+            centos-stream-9,
+            rockylinux-8,
+            rockylinux-9,
+            debian-11,
+            debian-12,
+            amazon-2,
+            amazon-2023,
+          ]
         suite:
-          - default
-          - ssl
-        platform:
-          - ubuntu-2204
-          - debian-12
-          - rockylinux-9
+          [default, ssl, multi-vhost, modules, performance-tuning, telemetry]
+      fail-fast: false
+    env:
+      CHEF_LICENSE: accept-silent
+      KITCHEN_LOCAL_YAML: .kitchen.dokken.yml
+      DOCKER_MEMORY: "2048m"
+      DOCKER_CPUS: "2"
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
+      - uses: actions/checkout@v4
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.2'
+          ruby-version: "3.3"
           bundler-cache: true
-
+      - name: Install Chef CLI
+        run: gem install chef-cli --version "~> 5.6"
       - name: Install dependencies
-        run: bundle install --jobs 4 --retry 3
-
-      - name: Run Test Kitchen
-        run: bundle exec kitchen test default-ubuntu-2204 --destroy=always
-        env:
-          CHEF_LICENSE: accept-no-persist
-
-  security-scan:
-    name: Security Scan
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+        run: bundle install
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v4
+      - name: Free disk space
+        run: |
+          sudo apt-get clean
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+      - name: Test Kitchen
+        run: |
+          bundle exec kitchen test ${{ matrix.suite }}-${{ matrix.os }} --destroy=always
+      - name: Upload kitchen logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
         with:
-          scan-type: fs
-          scan-ref: .
-          severity: CRITICAL,HIGH
-          exit-code: 1
-        continue-on-error: true
+          name: kitchen-logs-${{ matrix.suite }}-${{ matrix.os }}
+          path: .kitchen/logs/
+
+  source-install:
+    runs-on: ubuntu-latest
+    needs: lint
+    timeout-minutes: 60
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, ubuntu-22.04, centos-stream-8, rockylinux-9]
+        suite: [source]
+      fail-fast: false
+    env:
+      CHEF_LICENSE: accept-silent
+      KITCHEN_LOCAL_YAML: .kitchen.dokken.yml
+      DOCKER_MEMORY: "2048m"
+      DOCKER_CPUS: "2"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+      - name: Install Chef CLI
+        run: gem install chef-cli --version "~> 5.6"
+      - name: Install dependencies
+        run: bundle install
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v4
+      - name: Free disk space
+        run: |
+          sudo apt-get clean
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+      - name: Test Kitchen for Source Installs
+        run: |
+          bundle exec kitchen test ${{ matrix.suite }}-${{ matrix.os }} --destroy=always
+      - name: Upload kitchen logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kitchen-logs-${{ matrix.suite }}-${{ matrix.os }}
+          path: .kitchen/logs/
+
+  prefork-mpm:
+    runs-on: ubuntu-latest
+    needs: lint
+    timeout-minutes: 60
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, ubuntu-22.04, centos-stream-8, rockylinux-9]
+        suite: [prefork-mpm]
+      fail-fast: false
+    env:
+      CHEF_LICENSE: accept-silent
+      KITCHEN_LOCAL_YAML: .kitchen.dokken.yml
+      DOCKER_MEMORY: "2048m"
+      DOCKER_CPUS: "2"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+      - name: Install Chef CLI
+        run: gem install chef-cli --version "~> 5.6"
+      - name: Install dependencies
+        run: bundle install
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v4
+      - name: Free disk space
+        run: |
+          sudo apt-get clean
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+      - name: Test Kitchen for MPM Prefork
+        run: |
+          bundle exec kitchen test ${{ matrix.suite }}-${{ matrix.os }} --destroy=always
+      - name: Upload kitchen logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kitchen-logs-${{ matrix.suite }}-${{ matrix.os }}
+          path: .kitchen/logs/

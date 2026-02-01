@@ -1,0 +1,17 @@
+# OCSP Stapling Configuration
+# Managed by Chef - DO NOT EDIT MANUALLY
+
+# Enable OCSP stapling globally
+SSLUseStapling On
+
+# Create OCSP stapling cache
+SSLStaplingCache "shmcb:<%= @cache_path %>(128000)"
+
+# OCSP responder timeout
+SSLStaplingResponderTimeout 5
+
+# Return cached response if responder is not available
+SSLStaplingReturnResponderErrors Off
+
+# Fake OCSP responses are not trusted
+SSLStaplingFakeTryLater Off

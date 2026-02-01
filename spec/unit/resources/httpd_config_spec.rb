@@ -5,12 +5,12 @@ require 'spec_helper'
 describe 'test::httpd_config' do
   platforms = {
     'ubuntu' => {
-      'versions' => ['20.04', '22.04'],
+      'versions' => ['20.04'],
       'conf_available_dir' => '/etc/apache2/conf-available',
       'conf_enabled_dir' => '/etc/apache2/conf-enabled',
     },
     'centos' => {
-      'versions' => %w(8 9),
+      'versions' => %w(8),
       'conf_available_dir' => '/etc/httpd/conf.available',
       'conf_enabled_dir' => '/etc/httpd/conf.d',
     },

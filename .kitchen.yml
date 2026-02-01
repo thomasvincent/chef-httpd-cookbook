@@ -31,9 +31,9 @@ platforms:
         - RUN /usr/bin/apt-get update
         - RUN /usr/bin/apt-get install -y sudo
 
-  - name: ubuntu-20.04
+  - name: ubuntu-24.04
     driver:
-      image: dokken/ubuntu-20.04
+      image: dokken/ubuntu-24.04
       pid_one_command: /bin/systemd
       intermediate_instructions:
         - RUN /usr/bin/apt-get update

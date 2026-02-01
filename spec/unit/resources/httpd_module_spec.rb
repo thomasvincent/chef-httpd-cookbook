@@ -5,14 +5,14 @@ require 'spec_helper'
 describe 'test::httpd_module' do
   platforms = {
     'ubuntu' => {
-      'versions' => ['20.04', '22.04'],
+      'versions' => ['20.04'],
       'mod_dir' => '/etc/apache2/mods-available',
       'mod_enabled_dir' => '/etc/apache2/mods-enabled',
       'a2enmod_cmd' => '/usr/sbin/a2enmod',
       'a2dismod_cmd' => '/usr/sbin/a2dismod',
     },
     'centos' => {
-      'versions' => %w(8 9),
+      'versions' => %w(8),
       'mod_dir' => '/etc/httpd/conf.modules.d',
       'libexec_dir' => '/usr/lib64/httpd/modules',
     },

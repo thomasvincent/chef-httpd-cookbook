@@ -1,0 +1,10 @@
+# IP Whitelist for ModSecurity
+# Managed by Chef - DO NOT EDIT MANUALLY
+
+# Allow requests from whitelisted IPs to bypass ModSecurity rules
+SecRule REMOTE_ADDR "@ipMatch <%= @ip_whitelist.join(',') %>" \
+    "id:900001,\
+    phase:1,\
+    pass,\
+    nolog,\
+    ctl:ruleEngine=Off"

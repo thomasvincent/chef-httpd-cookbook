@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require_relative '../../../libraries/telemetry'
 
 describe 'Httpd::Telemetry' do
   let(:dummy_class) { Class.new { include Httpd::Telemetry } }

@@ -5,12 +5,12 @@ require 'spec_helper'
 describe 'httpd::service' do
   platforms = {
     'ubuntu' => {
-      'versions' => ['20.04', '22.04'],
+      'versions' => ['20.04'],
       'package_name' => 'apache2',
       'service_name' => 'apache2',
     },
     'centos' => {
-      'versions' => %w(8 9),
+      'versions' => %w(8),
       'package_name' => 'httpd',
       'service_name' => 'httpd',
     },

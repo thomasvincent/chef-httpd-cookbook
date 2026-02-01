@@ -1,0 +1,62 @@
+---
+# Vagrant-based Test Kitchen configuration
+# For platforms that cannot run in Docker (FreeBSD, macOS)
+
+driver:
+  name: vagrant
+  customize:
+    memory: 2048
+    cpus: 2
+
+provisioner:
+  name: chef_infra
+  product_name: chef
+  product_version: latest
+  install_strategy: once
+  chef_license: accept-no-persist
+  multiple_converge: 2
+  enforce_idempotency: true
+
+verifier:
+  name: inspec
+
+platforms:
+  # FreeBSD
+  - name: freebsd-14
+    driver:
+      box: freebsd/FreeBSD-14.0-RELEASE
+      box_url: https://app.vagrantup.com/freebsd/boxes/FreeBSD-14.0-RELEASE
+    provisioner:
+      require_chef_omnibus: false
+      chef_omnibus_install_options: -P chef
+
+  # macOS (requires macOS host or special licensing)
+  - name: macos-14
+    driver:
+      box: macos-14
+      provider: vmware_desktop
+    provisioner:
+      require_chef_omnibus: true
+    driver_config:
+      gui: true
+
+suites:
+  - name: default
+    run_list:
+      - recipe[httpd::default]
+    verifier:
+      inspec_tests:
+        - test/integration/default
+
+  - name: source
+    run_list:
+      - recipe[httpd::install]
+    excludes:
+      - macos-14
+    verifier:
+      inspec_tests:
+        - test/integration/source
+    attributes:
+      httpd:
+        install_method: source
+        version: '2.4.57'

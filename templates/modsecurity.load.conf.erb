@@ -1,0 +1,42 @@
+# ModSecurity Module Loader Configuration
+# Managed by Chef - DO NOT EDIT MANUALLY
+
+<IfModule security2_module>
+    # Load ModSecurity configuration
+    Include <%= @modsecurity_conf_dir %>/modsecurity.conf
+
+    # Load OWASP Core Rule Set setup
+    Include <%= @crs_dir %>/crs-setup.conf
+
+    # Load custom rule exclusions and whitelists (before CRS rules)
+    IncludeOptional <%= @modsecurity_conf_dir %>/rules/*.conf
+
+    # Load OWASP Core Rule Set rules
+    Include <%= @crs_dir %>/rules/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf
+    Include <%= @crs_dir %>/rules/REQUEST-901-INITIALIZATION.conf
+    Include <%= @crs_dir %>/rules/REQUEST-905-COMMON-EXCEPTIONS.conf
+    Include <%= @crs_dir %>/rules/REQUEST-910-IP-REPUTATION.conf
+    Include <%= @crs_dir %>/rules/REQUEST-911-METHOD-ENFORCEMENT.conf
+    Include <%= @crs_dir %>/rules/REQUEST-912-DOS-PROTECTION.conf
+    Include <%= @crs_dir %>/rules/REQUEST-913-SCANNER-DETECTION.conf
+    Include <%= @crs_dir %>/rules/REQUEST-920-PROTOCOL-ENFORCEMENT.conf
+    Include <%= @crs_dir %>/rules/REQUEST-921-PROTOCOL-ATTACK.conf
+    Include <%= @crs_dir %>/rules/REQUEST-930-APPLICATION-ATTACK-LFI.conf
+    Include <%= @crs_dir %>/rules/REQUEST-931-APPLICATION-ATTACK-RFI.conf
+    Include <%= @crs_dir %>/rules/REQUEST-932-APPLICATION-ATTACK-RCE.conf
+    Include <%= @crs_dir %>/rules/REQUEST-933-APPLICATION-ATTACK-PHP.conf
+    Include <%= @crs_dir %>/rules/REQUEST-934-APPLICATION-ATTACK-GENERIC.conf
+    Include <%= @crs_dir %>/rules/REQUEST-941-APPLICATION-ATTACK-XSS.conf
+    Include <%= @crs_dir %>/rules/REQUEST-942-APPLICATION-ATTACK-SQLI.conf
+    Include <%= @crs_dir %>/rules/REQUEST-943-APPLICATION-ATTACK-SESSION-FIXATION.conf
+    Include <%= @crs_dir %>/rules/REQUEST-944-APPLICATION-ATTACK-JAVA.conf
+    Include <%= @crs_dir %>/rules/REQUEST-949-BLOCKING-EVALUATION.conf
+    Include <%= @crs_dir %>/rules/RESPONSE-950-DATA-LEAKAGES.conf
+    Include <%= @crs_dir %>/rules/RESPONSE-951-DATA-LEAKAGES-SQL.conf
+    Include <%= @crs_dir %>/rules/RESPONSE-952-DATA-LEAKAGES-JAVA.conf
+    Include <%= @crs_dir %>/rules/RESPONSE-953-DATA-LEAKAGES-PHP.conf
+    Include <%= @crs_dir %>/rules/RESPONSE-954-DATA-LEAKAGES-IIS.conf
+    Include <%= @crs_dir %>/rules/RESPONSE-959-BLOCKING-EVALUATION.conf
+    Include <%= @crs_dir %>/rules/RESPONSE-980-CORRELATION.conf
+    Include <%= @crs_dir %>/rules/RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf
+</IfModule>

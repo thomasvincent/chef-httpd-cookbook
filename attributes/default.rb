@@ -65,6 +65,46 @@ when 'debian'
   default['httpd']['lib_dir'] = '/usr/lib/apache2'
   default['httpd']['libexec_dir'] = "#{node['httpd']['lib_dir']}/modules"
   default['httpd']['default_site_enabled'] = false
+when 'freebsd'
+  default['httpd']['package_name'] = 'apache24'
+  default['httpd']['service_name'] = 'apache24'
+  default['httpd']['root_dir'] = '/usr/local/etc/apache24'
+  default['httpd']['conf_dir'] = '/usr/local/etc/apache24'
+  default['httpd']['conf_available_dir'] = '/usr/local/etc/apache24/Includes'
+  default['httpd']['conf_enabled_dir'] = '/usr/local/etc/apache24/Includes'
+  default['httpd']['user'] = 'www'
+  default['httpd']['group'] = 'www'
+  default['httpd']['binary'] = '/usr/local/sbin/httpd'
+  default['httpd']['icon_dir'] = '/usr/local/share/apache24/icons'
+  default['httpd']['module_dir'] = '/usr/local/libexec/apache24'
+  default['httpd']['mod_dir'] = '/usr/local/etc/apache24/modules.d'
+  default['httpd']['includes_dir'] = '/usr/local/etc/apache24/Includes'
+  default['httpd']['pid_file'] = '/var/run/httpd.pid'
+  default['httpd']['error_log'] = '/var/log/httpd-error.log'
+  default['httpd']['access_log'] = '/var/log/httpd-access.log'
+  default['httpd']['lib_dir'] = '/usr/local/libexec/apache24'
+  default['httpd']['libexec_dir'] = '/usr/local/libexec/apache24'
+  default['httpd']['default_site_enabled'] = false
+when 'mac_os_x'
+  default['httpd']['package_name'] = 'httpd'
+  default['httpd']['service_name'] = 'httpd'
+  default['httpd']['root_dir'] = '/opt/homebrew/etc/httpd'
+  default['httpd']['conf_dir'] = '/opt/homebrew/etc/httpd'
+  default['httpd']['conf_available_dir'] = '/opt/homebrew/etc/httpd/extra'
+  default['httpd']['conf_enabled_dir'] = '/opt/homebrew/etc/httpd/extra'
+  default['httpd']['user'] = '_www'
+  default['httpd']['group'] = '_www'
+  default['httpd']['binary'] = '/opt/homebrew/bin/httpd'
+  default['httpd']['icon_dir'] = '/opt/homebrew/share/httpd/icons'
+  default['httpd']['module_dir'] = '/opt/homebrew/lib/httpd/modules'
+  default['httpd']['mod_dir'] = '/opt/homebrew/etc/httpd/extra'
+  default['httpd']['includes_dir'] = '/opt/homebrew/etc/httpd/extra'
+  default['httpd']['pid_file'] = '/opt/homebrew/var/run/httpd/httpd.pid'
+  default['httpd']['error_log'] = '/opt/homebrew/var/log/httpd/error_log'
+  default['httpd']['access_log'] = '/opt/homebrew/var/log/httpd/access_log'
+  default['httpd']['lib_dir'] = '/opt/homebrew/lib/httpd'
+  default['httpd']['libexec_dir'] = '/opt/homebrew/lib/httpd/modules'
+  default['httpd']['default_site_enabled'] = false
 end
 
 # Source installation attributes
@@ -115,6 +155,27 @@ default['httpd']['source']['dependencies'] = case node['platform_family']
                                                  libapr1-dev
                                                  libaprutil1-dev
                                                )
+                                             when 'freebsd'
+                                               %w(
+                                                 apr
+                                                 pcre
+                                                 libxml2
+                                                 lua54
+                                                 curl
+                                                 libnghttp2
+                                                 jansson
+                                               )
+                                             when 'mac_os_x'
+                                               %w(
+                                                 apr
+                                                 apr-util
+                                                 pcre
+                                                 openssl
+                                                 libxml2
+                                                 nghttp2
+                                               )
+                                             else
+                                               []
                                              end
 
 # Multi-Processing Module configuration
@@ -289,6 +350,12 @@ when 'debian'
   # AppArmor configurations
   default['httpd']['apparmor']['enabled'] = true
   default['httpd']['apparmor']['profile'] = '/etc/apparmor.d/usr.sbin.apache2'
+when 'freebsd'
+  # FreeBSD rc.conf settings
+  default['httpd']['rc_conf']['apache24_enable'] = 'YES'
+when 'mac_os_x'
+  # macOS uses Homebrew services
+  default['httpd']['use_homebrew_service'] = true
 end
 
 # Firewall configuration
@@ -315,6 +382,10 @@ default['httpd']['logrotate']['postrotate'] = case node['platform_family']
                                                 '/bin/systemctl reload httpd.service > /dev/null 2>/dev/null || true'
                                               when 'debian'
                                                 '/bin/systemctl reload apache2.service > /dev/null 2>/dev/null || true'
+                                              when 'freebsd'
+                                                '/usr/sbin/service apache24 reload > /dev/null 2>/dev/null || true'
+                                              when 'mac_os_x'
+                                                nil # macOS uses newsyslog, not logrotate
                                               end
 
 # Health check and monitoring
@@ -341,3 +412,167 @@ default['httpd']['telemetry']['grafana']['enabled'] = false
 default['httpd']['telemetry']['grafana']['url'] = 'http://localhost:3000'
 default['httpd']['telemetry']['grafana']['datasource'] = 'Prometheus'
 default['httpd']['telemetry']['grafana']['api_key'] = nil
+
+# -----------------------------------------------------------------------------
+# Let's Encrypt / ACME Configuration
+# -----------------------------------------------------------------------------
+
+# Enable Let's Encrypt certificate automation
+default['httpd']['letsencrypt']['enabled'] = false
+
+# Email for certificate expiry notifications (required for production)
+default['httpd']['letsencrypt']['email'] = nil
+
+# Domains to request certificates for
+# Example: ['example.com', 'www.example.com']
+default['httpd']['letsencrypt']['domains'] = []
+
+# ACME server (use staging for testing)
+default['httpd']['letsencrypt']['server'] = 'https://acme-v02.api.letsencrypt.org/directory'
+default['httpd']['letsencrypt']['staging_server'] = 'https://acme-staging-v02.api.letsencrypt.org/directory'
+
+# Use staging server for testing
+default['httpd']['letsencrypt']['staging'] = false
+
+# Certbot package name by platform
+default['httpd']['letsencrypt']['certbot_package'] = case node['platform_family']
+                                                     when 'rhel', 'fedora', 'amazon'
+                                                       'certbot'
+                                                     when 'debian'
+                                                       'certbot'
+                                                     when 'freebsd'
+                                                       'py39-certbot'
+                                                     else
+                                                       'certbot'
+                                                     end
+
+# Apache plugin package
+default['httpd']['letsencrypt']['apache_plugin'] = case node['platform_family']
+                                                   when 'rhel', 'fedora', 'amazon'
+                                                     'python3-certbot-apache'
+                                                   when 'debian'
+                                                     'python3-certbot-apache'
+                                                   when 'freebsd'
+                                                     'py39-certbot-apache'
+                                                   else
+                                                     'python3-certbot-apache'
+                                                   end
+
+# Certificate directory
+default['httpd']['letsencrypt']['cert_dir'] = '/etc/letsencrypt/live'
+
+# Renewal configuration
+default['httpd']['letsencrypt']['renewal']['enabled'] = true
+default['httpd']['letsencrypt']['renewal']['schedule'] = '0 3 * * *' # 3 AM daily
+default['httpd']['letsencrypt']['renewal']['pre_hook'] = nil
+default['httpd']['letsencrypt']['renewal']['post_hook'] = nil
+default['httpd']['letsencrypt']['renewal']['deploy_hook'] = nil
+
+# Challenge type: 'http' or 'dns'
+default['httpd']['letsencrypt']['challenge'] = 'http'
+
+# Webroot path for HTTP challenge
+default['httpd']['letsencrypt']['webroot'] = '/var/www/letsencrypt'
+
+# RSA key size
+default['httpd']['letsencrypt']['key_size'] = 4096
+
+# Enable OCSP stapling for Let's Encrypt certs
+default['httpd']['letsencrypt']['ocsp_stapling'] = true
+
+# Agree to terms of service automatically
+default['httpd']['letsencrypt']['agree_tos'] = true
+
+# -----------------------------------------------------------------------------
+# ModSecurity / WAF Configuration
+# -----------------------------------------------------------------------------
+
+# Enable ModSecurity
+default['httpd']['modsecurity']['enabled'] = false
+
+# ModSecurity mode: 'DetectionOnly' or 'On'
+default['httpd']['modsecurity']['mode'] = 'DetectionOnly'
+
+# Package names by platform
+default['httpd']['modsecurity']['package'] = case node['platform_family']
+                                             when 'rhel', 'fedora', 'amazon'
+                                               'mod_security'
+                                             when 'debian'
+                                               'libapache2-mod-security2'
+                                             when 'freebsd'
+                                               'ap24-mod_security'
+                                             else
+                                               'libapache2-mod-security2'
+                                             end
+
+# OWASP Core Rule Set version
+default['httpd']['modsecurity']['crs_version'] = '3.3.5'
+
+# CRS download URL
+default['httpd']['modsecurity']['crs_url'] = lazy do
+  "https://github.com/coreruleset/coreruleset/archive/refs/tags/v#{node['httpd']['modsecurity']['crs_version']}.tar.gz"
+end
+
+# CRS installation directory
+default['httpd']['modsecurity']['crs_dir'] = '/etc/modsecurity/crs'
+
+# ModSecurity configuration directory
+default['httpd']['modsecurity']['conf_dir'] = case node['platform_family']
+                                              when 'rhel', 'fedora', 'amazon'
+                                                '/etc/httpd/modsecurity.d'
+                                              when 'debian'
+                                                '/etc/modsecurity'
+                                              when 'freebsd'
+                                                '/usr/local/etc/modsecurity'
+                                              else
+                                                '/etc/modsecurity'
+                                              end
+
+# Audit log settings
+default['httpd']['modsecurity']['audit_log']['enabled'] = true
+default['httpd']['modsecurity']['audit_log']['type'] = 'Serial'
+default['httpd']['modsecurity']['audit_log']['path'] = '/var/log/modsecurity/modsec_audit.log'
+default['httpd']['modsecurity']['audit_log']['parts'] = 'ABIJDEFHZ'
+default['httpd']['modsecurity']['audit_log']['relevant_only'] = false
+
+# Request body settings
+default['httpd']['modsecurity']['request_body']['enabled'] = true
+default['httpd']['modsecurity']['request_body']['limit'] = 13_107_200
+default['httpd']['modsecurity']['request_body']['no_files_limit'] = 131_072
+default['httpd']['modsecurity']['request_body']['limit_action'] = 'Reject'
+
+# Response body settings
+default['httpd']['modsecurity']['response_body']['enabled'] = false
+default['httpd']['modsecurity']['response_body']['limit'] = 1_048_576
+default['httpd']['modsecurity']['response_body']['limit_action'] = 'ProcessPartial'
+default['httpd']['modsecurity']['response_body']['mime_types'] = %w(
+  text/plain
+  text/html
+  text/xml
+  application/json
+)
+
+# Rule engine settings
+default['httpd']['modsecurity']['paranoia_level'] = 1
+default['httpd']['modsecurity']['anomaly_inbound_threshold'] = 5
+default['httpd']['modsecurity']['anomaly_outbound_threshold'] = 4
+
+# Exclusions for false positives
+# Example: [{ 'id' => '920350', 'reason' => 'False positive for API' }]
+default['httpd']['modsecurity']['rule_exclusions'] = []
+
+# IP whitelist for bypassing WAF
+default['httpd']['modsecurity']['ip_whitelist'] = []
+
+# Custom rules
+default['httpd']['modsecurity']['custom_rules'] = []
+
+# Enable GeoIP blocking
+default['httpd']['modsecurity']['geoip']['enabled'] = false
+default['httpd']['modsecurity']['geoip']['database'] = '/usr/share/GeoIP/GeoLite2-Country.mmdb'
+default['httpd']['modsecurity']['geoip']['blocked_countries'] = []
+
+# Bot detection settings
+default['httpd']['modsecurity']['bot_detection']['enabled'] = true
+default['httpd']['modsecurity']['bot_detection']['block_bad_bots'] = true
+default['httpd']['modsecurity']['bot_detection']['allow_good_bots'] = true

@@ -28,62 +28,8 @@ describe 'httpd::install' do
           expect { chef_run }.to_not raise_error
         end
 
-        context 'when installing from package' do
-          it 'installs the correct package' do
-            expect(chef_run).to install_package(platform_info['package_name'])
-          end
-
-          it 'creates configuration directories' do
-            if platform == 'centos'
-              expect(chef_run).to create_directory('/etc/httpd/conf.d').with(
-                recursive: true
-              )
-            end
-
-            if platform == 'ubuntu'
-              expect(chef_run).to create_directory('/etc/apache2/conf-available').with(
-                recursive: true
-              )
-            end
-          end
-
-          it 'creates MPM configuration' do
-            expect(chef_run).to create_template('/etc/httpd/mpm.conf') if platform == 'centos'
-            expect(chef_run).to create_template('/etc/apache2/mods-available/mpm_event.conf') if platform == 'ubuntu'
-          end
-        end
-
-        context 'when installing from source' do
-          let(:chef_run) do
-            runner = ChefSpec::SoloRunner.new(platform: platform, version: version)
-            runner.node.override['httpd']['install_method'] = 'source'
-            runner.node.override['httpd']['version'] = '2.4.57'
-            runner.converge(described_recipe)
-          end
-
-          it 'installs required dependencies' do
-            expect(chef_run).to install_package('httpd-deps')
-          end
-
-          it 'downloads the source tarball' do
-            expect(chef_run).to create_remote_file("#{Chef::Config[:file_cache_path]}/httpd/httpd-2.4.57.tar.gz")
-          end
-
-          it 'extracts and compiles Apache' do
-            expect(chef_run).to run_bash('compile-httpd')
-          end
-        end
-
-        context 'when configuring SELinux on RHEL family' do
-          let(:chef_run) do
-            runner = ChefSpec::SoloRunner.new(platform: 'centos', version: '8')
-            runner.node.override['httpd']['selinux']['enabled'] = true
-            runner.converge(described_recipe)
-          end
-
-          it 'installs SELinux policy packages' do
-            expect(chef_run).to install_package('policycoreutils-python')
-          end
+        it 'creates the httpd_install resource' do
+          expect(chef_run).to install_httpd_install('default')
         end
       end
     end

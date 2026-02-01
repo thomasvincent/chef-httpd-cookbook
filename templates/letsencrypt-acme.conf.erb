@@ -1,0 +1,12 @@
+# Let's Encrypt ACME Challenge Configuration
+# Managed by Chef - DO NOT EDIT MANUALLY
+
+# Alias for ACME challenge validation
+Alias /.well-known/acme-challenge/ <%= @webroot %>/.well-known/acme-challenge/
+
+<Directory "<%= @webroot %>/.well-known/acme-challenge/">
+    Options None
+    AllowOverride None
+    ForceType text/plain
+    Require all granted
+</Directory>
