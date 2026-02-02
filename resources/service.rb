@@ -116,7 +116,6 @@ action_class do
         mod_dir: node['httpd']['mod_dir'],
         additional_config: new_resource.additional_config
       )
-      notifies :restart, "service[#{new_resource.service_name}]", :delayed
       action :create
       only_if { new_resource.service_config_changes }
     end
