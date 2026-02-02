@@ -101,11 +101,12 @@ execute 'test apache config' do
 end
 
 # Start and enable httpd service
+# Note: service resource is declared inside httpd_service custom resource
+# We only need to enable and start it here
 service node['httpd']['service_name'] do
-  service_name node['httpd']['service_name']
   supports status: true, restart: true, reload: true
   action %i(enable start)
-  ignore_failure true # Don't fail in test environments
+  ignore_failure true
 end
 
 log 'Apache HTTP Server service configured and started' do
