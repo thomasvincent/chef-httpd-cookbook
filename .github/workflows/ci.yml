@@ -79,7 +79,7 @@ jobs:
       - name: Install Policyfile dependencies
         run: bundle exec chef-cli install Policyfile.rb
       - name: Set up Docker
-        uses: docker/setup-buildx-action@v4
+        uses: docker/setup-buildx-action@v3
       - name: Free disk space
         run: |
           sudo apt-get clean
