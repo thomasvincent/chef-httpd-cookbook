@@ -24,7 +24,7 @@ jobs:
     runs-on: [self-hosted, chef]
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
@@ -37,12 +37,12 @@ jobs:
       - name: Run ChefSpec tests with coverage
         run: bundle exec rspec --format documentation --format RspecJunitFormatter --out rspec.xml
       - name: Upload test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: rspec-results
           path: rspec.xml
       - name: Upload coverage results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: coverage-results
           path: coverage/
@@ -70,7 +70,7 @@ jobs:
       DOCKER_MEMORY: "2048m"
       DOCKER_CPUS: "2"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
@@ -91,7 +91,7 @@ jobs:
           bundle exec kitchen test ${{ matrix.suite }}-${{ matrix.os }} --destroy=always
       - name: Upload kitchen logs on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: kitchen-logs-${{ matrix.suite }}-${{ matrix.os }}
           path: .kitchen/logs/
