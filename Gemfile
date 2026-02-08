@@ -7,6 +7,9 @@ gem 'chef-cli', '~> 5.6'
 gem 'chefspec', '~> 9.3'
 gem 'cookstyle', '~> 8.1'
 
+# Pin psych to avoid compilation issues with Ruby 3.2+
+gem 'psych', '< 5'
+
 group :development do
   gem 'rake', '~> 13.0'
 end
