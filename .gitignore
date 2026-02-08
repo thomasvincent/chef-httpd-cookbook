@@ -1,21 +1,90 @@
+# Chef
 .kitchen/
+kitchen.local.yml
 .kitchen.local.yml
-coverage/
-.idea/
-.vscode/
-*.swp
-*.swo
-.bundle/
-vendor/
-.docker/
-.vagrant/
-Gemfile.lock
-Policyfile.lock.json
-.rspec_status
-tmp/
-.env
-.DS_Store
-node_modules/
-.chef/
+.chef/*.pem
+.chef/encrypted_data_bag_secret
+
+# Ruby
 *.gem
 *.rbc
+.rake_test_cache/
+.rvmrc
+.rbenv-version
+.ruby-version
+.bundle/
+.config
+coverage/
+InstalledFiles
+lib/bundler/man
+pkg
+rdoc
+spec/reports
+test/tmp
+test/version_tmp
+tmp/
+vendor/
+Gemfile.lock
+
+# YARD artifacts
+.yardoc
+_yardoc
+doc/
+
+# Berkshelf
+Berksfile.lock
+berks-cookbooks/*
+cookbooks/*
+
+# Vagrant
+.vagrant/
+Vagrantfile
+
+# Test Kitchen
+.kitchen/
+.kitchen.yml
+.kitchen.local.yml
+.kitchen.dokken.yml
+
+# Cache objects
+*/cache_dir
+cache/
+
+# Logs
+logs/
+*.log
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+ehthumbs.db
+Thumbs.db
+
+# Editor files
+.idea/
+*.iml
+*.sublime-project
+*.sublime-workspace
+.project
+.vscode/
+*~
+*#
+.#*
+\#*#
+.*.sw[a-z]
+*.un~
+*.swp
+*.swo
+
+# Cookbook build files
+/dist/
+
+# Environment and test files
+.env
+.rspec_status
+Policyfile.lock.json
+node_modules/
