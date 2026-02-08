@@ -89,6 +89,8 @@ jobs:
       - name: Test Kitchen
         run: |
           bundle exec kitchen test ${{ matrix.suite }}-${{ matrix.os }} --destroy=always
+        env:
+          CHEF_LICENSE: accept-no-persist
       - name: Upload kitchen logs on failure
         if: failure()
         uses: actions/upload-artifact@v6
