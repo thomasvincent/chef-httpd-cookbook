@@ -212,9 +212,9 @@ GEM
     fauxhai-chef (9.3.26)
       net-ssh
       ohai (>= 13.0)
-    ffi (1.17.0)
-    ffi (1.17.0-arm64-darwin)
-    ffi (1.17.0-x86_64-darwin)
+    ffi (1.17.3)
+    ffi (1.17.3-arm64-darwin)
+    ffi (1.17.3-x86_64-darwin)
     ffi-libarchive (1.1.14)
       ffi (~> 1.0)
     ffi-yajl (2.7.7)
@@ -375,10 +375,10 @@ GEM
     netrc (0.11.0)
     nori (2.7.1)
       bigdecimal
-    ohai (18.2.8)
+    ohai (18.1.18)
       chef-config (>= 14.12, < 19)
       chef-utils (>= 16.0, < 19)
-      ffi (~> 1.9, <= 1.17.0)
+      ffi (~> 1.9)
       ffi-yajl (~> 2.2)
       ipaddress
       mixlib-cli (>= 1.7.0)
