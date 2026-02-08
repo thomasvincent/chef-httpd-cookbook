@@ -15,8 +15,11 @@ group :development do
 end
 
 group :test do
+  # Use inspec-core (not inspec) to avoid commercial chef-licensing requirement in InSpec 7+
+  gem 'inspec-core', '~> 6.0'
   gem 'kitchen-dokken', '~> 2.20'
-  gem 'kitchen-inspec', '~> 3.0'
+  # 3.1+ supports test-kitchen 4.x and inspec-core 6.x/7.x
+  gem 'kitchen-inspec', '~> 3.1'
   gem 'test-kitchen', '>= 3.0'
   gem 'simplecov', '~> 0.22'
   gem 'simplecov-console', '~> 0.9'
