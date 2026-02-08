@@ -21,7 +21,7 @@ concurrency:
 
 jobs:
   lint:
-    runs-on: [self-hosted, chef]
+    runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v6
@@ -48,7 +48,7 @@ jobs:
           path: coverage/
 
   integration:
-    runs-on: [self-hosted, chef]
+    runs-on: ubuntu-latest
     needs: lint
     timeout-minutes: 60
     strategy:

@@ -13,6 +13,7 @@ transport:
 
 provisioner:
   name: dokken
+  product_name: cinc
   chef_license: accept-no-persist
   multiple_converge: 2
   enforce_idempotency: true
