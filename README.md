@@ -168,6 +168,35 @@ httpd_service 'default' do
 end
 ```
 
+## Recipes
+
+### default
+Main recipe that orchestrates Apache HTTP Server installation. Includes installation, configuration, and service management.
+
+### install
+Installs Apache HTTP Server packages and dependencies appropriate for the platform.
+
+### configure
+Configures Apache settings including httpd.conf, security headers, and module configuration.
+
+### service
+Manages the Apache service including start, stop, restart, and reload operations.
+
+### ssl
+Configures SSL/TLS support with modern cipher suites and security best practices.
+
+### letsencrypt
+Integrates Let's Encrypt for automatic SSL certificate provisioning and renewal using the ACME protocol.
+
+### modsecurity
+Configures ModSecurity Web Application Firewall with OWASP Core Rule Set for enhanced security.
+
+### vhosts
+Manages Apache virtual hosts configuration for serving multiple websites.
+
+### telemetry
+Configures Apache metrics and monitoring integration for observability.
+
 ## Attributes
 
 ### SSL Attributes
@@ -242,10 +271,20 @@ bundle exec kitchen test
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes with tests
-4. Submit a pull request
+1. Fork the repository on GitHub
+2. Create a feature branch (`git checkout -b feature/my-new-feature`)
+3. Write tests for your changes
+4. Make your changes
+5. Run the test suite to ensure all tests pass
+6. Commit your changes (`git commit -am 'Add new feature'`)
+7. Push to the branch (`git push origin feature/my-new-feature`)
+8. Create a Pull Request
+
+Please ensure:
+- All tests pass before submitting PR
+- Code follows Cookstyle guidelines
+- New features include appropriate tests
+- Documentation is updated for any new attributes or recipes
 
 ## License
 
