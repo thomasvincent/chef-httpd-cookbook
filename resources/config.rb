@@ -2,7 +2,6 @@
 
 unified_mode true
 
-resource_name :httpd_config
 provides :httpd_config
 
 description 'Use the httpd_config resource to create configuration snippets'

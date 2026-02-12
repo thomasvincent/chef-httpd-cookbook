@@ -2,7 +2,6 @@
 
 unified_mode true
 
-resource_name :httpd_install
 provides :httpd_install
 
 description 'Use the httpd_install resource to install Apache HTTP Server'

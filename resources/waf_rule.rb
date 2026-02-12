@@ -2,7 +2,6 @@
 
 unified_mode true
 
-resource_name :httpd_waf_rule
 provides :httpd_waf_rule
 
 description 'Manages ModSecurity WAF rules for Apache HTTP Server'
