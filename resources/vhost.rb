@@ -2,7 +2,6 @@
 
 unified_mode true
 
-resource_name :httpd_vhost
 provides :httpd_vhost
 
 description 'Use the httpd_vhost resource to configure Apache virtual hosts'

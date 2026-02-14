@@ -2,7 +2,6 @@
 
 unified_mode true
 
-resource_name :httpd_certificate
 provides :httpd_certificate
 
 description 'Manages SSL/TLS certificates for Apache HTTP Server with Let\'s Encrypt support'

@@ -2,7 +2,6 @@
 
 unified_mode true
 
-resource_name :httpd_service
 provides :httpd_service
 
 description 'Use the httpd_service resource to manage the Apache HTTP Server service'

@@ -2,7 +2,6 @@
 
 unified_mode true
 
-resource_name :httpd_module
 provides :httpd_module
 
 description 'Use the httpd_module resource to enable or disable Apache modules'
